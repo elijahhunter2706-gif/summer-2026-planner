@@ -346,6 +346,7 @@ textarea.notes { width: 100%; min-height: 70px; background: var(--bg); border: 1
     <div>
       <h1>SUMMER 2026 · MASTER PLAN</h1>
       <div class="subtitle">MCAT Prep · Marathon Training · Summer Program</div>
+      <div id="sync-indicator" style="margin-top:3px; font-size:11px; font-weight:600; letter-spacing:0.5px;"></div>
     </div>
     <div class="countdown" id="countdown"></div>
   </div>
@@ -513,7 +514,10 @@ function loadState() {
     };
   } catch (e) { return defaultState(); }
 }
-function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  scheduleSyncSave();
+}
 function isChecked(date, taskId) { return !!(state.checks[date] && state.checks[date][taskId]); }
 function setCheck(date, taskId, val) {
   if (!state.checks[date]) state.checks[date] = {};
@@ -524,6 +528,243 @@ function setCheck(date, taskId, val) {
 }
 
 let state = loadState();
+
+// ============================================================
+// CLOUD SYNC — GitHub Gist backend
+// Token lives in localStorage only, never in code or the repo.
+// ============================================================
+const SYNC_TOKEN_KEY = "summer2026_sync_token";
+const SYNC_GIST_KEY  = "summer2026_sync_gist";
+const SYNC_LAST_KEY  = "summer2026_sync_last";
+const GIST_FILENAME  = "summer2026_data.json";
+
+let syncCfg = {
+  token:  localStorage.getItem(SYNC_TOKEN_KEY) || "",
+  gistId: localStorage.getItem(SYNC_GIST_KEY)  || "",
+  last:   localStorage.getItem(SYNC_LAST_KEY)  || "",
+  status: "idle",   // idle | loading | saving | error
+  error:  "",
+};
+
+async function gistFetch(method, path, body) {
+  const res = await fetch("https://api.github.com" + path, {
+    method,
+    headers: {
+      "Authorization": "Bearer " + syncCfg.token,
+      "Accept": "application/vnd.github+json",
+      "Content-Type": "application/json",
+      "X-GitHub-Api-Version": "2022-11-28",
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (!res.ok) {
+    const txt = await res.text();
+    throw new Error(res.status + ": " + txt.slice(0, 120));
+  }
+  return res.json();
+}
+
+async function findOrCreateGist() {
+  for (let page = 1; page <= 5; page++) {
+    const list = await gistFetch("GET", "/gists?per_page=100&page=" + page);
+    const hit = list.find(g => g.files && g.files[GIST_FILENAME]);
+    if (hit) return hit.id;
+    if (list.length < 100) break;
+  }
+  const created = await gistFetch("POST", "/gists", {
+    description: "Summer 2026 Planner sync data",
+    public: false,
+    files: { [GIST_FILENAME]: { content: JSON.stringify(state) } },
+  });
+  return created.id;
+}
+
+let _syncSaveTimer = null;
+function scheduleSyncSave() {
+  if (!syncCfg.token || !syncCfg.gistId) return;
+  clearTimeout(_syncSaveTimer);
+  _syncSaveTimer = setTimeout(pushToGist, 1500);
+}
+
+async function pushToGist() {
+  if (!syncCfg.token || !syncCfg.gistId) return;
+  syncCfg.status = "saving";
+  updateSyncUI();
+  try {
+    await gistFetch("PATCH", "/gists/" + syncCfg.gistId, {
+      files: { [GIST_FILENAME]: { content: JSON.stringify(state) } },
+    });
+    syncCfg.status = "idle";
+    syncCfg.error = "";
+    syncCfg.last = new Date().toISOString();
+    localStorage.setItem(SYNC_LAST_KEY, syncCfg.last);
+  } catch (e) {
+    syncCfg.status = "error";
+    syncCfg.error = e.message;
+  }
+  updateSyncUI();
+}
+
+async function pullFromGist() {
+  if (!syncCfg.token || !syncCfg.gistId) return false;
+  syncCfg.status = "loading";
+  updateSyncUI();
+  try {
+    const gist = await gistFetch("GET", "/gists/" + syncCfg.gistId);
+    const raw = gist.files[GIST_FILENAME]?.content;
+    if (!raw) { syncCfg.status = "idle"; updateSyncUI(); return false; }
+    const remote = JSON.parse(raw);
+    const def = defaultState();
+    state = {
+      checks:    remote.checks    || {},
+      notes:     remote.notes     || {},
+      anki:      { ...def.anki, ...(remote.anki || {}) },
+      ankiDaily: remote.ankiDaily || {},
+      runs:      remote.runs      || {},
+      exams:     remote.exams     || [],
+      overrides: remote.overrides || {},
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    syncCfg.status = "idle";
+    syncCfg.error = "";
+    syncCfg.last = new Date().toISOString();
+    localStorage.setItem(SYNC_LAST_KEY, syncCfg.last);
+    return true;
+  } catch (e) {
+    syncCfg.status = "error";
+    syncCfg.error = e.message;
+    updateSyncUI();
+    return false;
+  }
+}
+
+async function connectSync(token) {
+  syncCfg.token = token.trim();
+  localStorage.setItem(SYNC_TOKEN_KEY, syncCfg.token);
+  syncCfg.status = "loading";
+  updateSyncUI();
+  try {
+    const gistId = await findOrCreateGist();
+    syncCfg.gistId = gistId;
+    localStorage.setItem(SYNC_GIST_KEY, gistId);
+    const pulled = await pullFromGist();
+    if (!pulled) await pushToGist();
+    render();
+    return true;
+  } catch (e) {
+    syncCfg.status = "error";
+    syncCfg.error = e.message;
+    updateSyncUI();
+    return false;
+  }
+}
+
+function disconnectSync() {
+  syncCfg = { token: "", gistId: "", last: "", status: "idle", error: "" };
+  [SYNC_TOKEN_KEY, SYNC_GIST_KEY, SYNC_LAST_KEY].forEach(k => localStorage.removeItem(k));
+  updateSyncUI();
+}
+
+function updateSyncUI() {
+  const ind = document.getElementById("sync-indicator");
+  if (ind) {
+    if (!syncCfg.token) {
+      ind.innerHTML = "";
+    } else {
+      const dot = { idle: "var(--check)", loading: "var(--accent)", saving: "var(--accent)", error: "var(--danger)" }[syncCfg.status];
+      const label = { idle: "synced", loading: "syncing…", saving: "saving…", error: "sync error" }[syncCfg.status];
+      ind.innerHTML = `<span style="color:${dot};">●</span> <span style="color:var(--muted);">${label}</span>`;
+    }
+  }
+  const sp = document.getElementById("sync-panel");
+  if (sp) { sp.outerHTML = buildSyncPanel(); wireSyncPanel(); }
+}
+
+function formatSyncTime(iso) {
+  if (!iso) return "never";
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-US", { month:"short", day:"numeric" })
+    + " at " + d.toLocaleTimeString("en-US", { hour:"numeric", minute:"2-digit" });
+}
+
+function buildSyncPanel() {
+  const connected = !!(syncCfg.token && syncCfg.gistId);
+  if (!connected) {
+    return `
+      <div class="panel" id="sync-panel" style="border-left:3px solid var(--accent);">
+        <h2>Cloud Sync</h2>
+        <p style="color:var(--muted); font-size:13px; margin-bottom:12px;">Sync your progress across all devices using a private GitHub Gist. Your data stays in your own GitHub account — nothing goes to any third-party server.</p>
+        <p style="font-size:13px; margin-bottom:12px;">
+          <strong>Step 1</strong> — <a href="https://github.com/settings/tokens/new?scopes=gist&description=Summer+2026+Planner" target="_blank" rel="noopener" style="color:var(--accent);">Open GitHub → Settings → Developer Settings → Personal Access Tokens (classic)</a>.
+          Create a token with only the <code style="background:var(--bg); padding:1px 6px; border-radius:3px; font-size:11px;">gist</code> scope checked. Copy the token (starts with <code style="background:var(--bg); padding:1px 6px; border-radius:3px; font-size:11px;">ghp_</code>).
+        </p>
+        <p style="font-size:13px; margin-bottom:12px;"><strong>Step 2</strong> — Paste it below and click Connect.</p>
+        <div class="row" style="margin-bottom:8px; flex-wrap:nowrap;">
+          <input type="password" id="sync-token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" style="flex:1; min-width:0; font-family:monospace; font-size:13px;">
+          <button class="btn btn-sm" id="sync-connect-btn">Connect</button>
+        </div>
+        <div id="sync-msg" style="color:var(--danger); font-size:12px; min-height:18px;"></div>
+        <div class="hint" style="margin-top:10px;">The token is saved in this browser's localStorage only. It never touches our code or the GitHub repo.</div>
+      </div>`;
+  }
+  const statusColor = { idle:"var(--check)", loading:"var(--accent)", saving:"var(--accent)", error:"var(--danger)" }[syncCfg.status];
+  const statusLabel = { idle:"Connected", loading:"Syncing…", saving:"Saving…", error:"Error" }[syncCfg.status];
+  return `
+    <div class="panel" id="sync-panel" style="border-left:3px solid var(--check);">
+      <h2>Cloud Sync</h2>
+      <div class="dash-grid" style="margin-bottom:14px;">
+        <div class="stat-card">
+          <div class="stat-label">Status</div>
+          <div style="margin-top:8px; font-size:15px; font-weight:700; color:${statusColor};">● ${statusLabel}</div>
+          ${syncCfg.error ? `<div class="hint" style="color:var(--danger); margin-top:4px; font-size:11px;" title="${escapeHtml(syncCfg.error)}">${escapeHtml(syncCfg.error.slice(0,80))}</div>` : ""}
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Last Synced</div>
+          <div style="margin-top:8px; font-size:13px; font-weight:700;">${formatSyncTime(syncCfg.last)}</div>
+        </div>
+      </div>
+      <div class="row">
+        <button class="btn btn-sm btn-ghost" id="sync-pull-btn">↓ Pull from cloud</button>
+        <button class="btn btn-sm btn-ghost" id="sync-push-btn">↑ Push to cloud</button>
+        <button class="btn btn-sm btn-ghost" id="sync-disconnect-btn" style="color:var(--danger); border-color:var(--danger); margin-left:auto;">Disconnect</button>
+      </div>
+      <div class="hint" style="margin-top:8px;">Changes auto-save to the cloud ~1.5 s after each update. On a new device, enter the same token in this panel to connect.</div>
+    </div>`;
+}
+
+function wireSyncPanel() {
+  const connectBtn = document.getElementById("sync-connect-btn");
+  if (connectBtn) {
+    connectBtn.onclick = async () => {
+      const token = (document.getElementById("sync-token-input").value || "").trim();
+      const msg = document.getElementById("sync-msg");
+      if (!token) { msg.textContent = "Paste your token first."; return; }
+      connectBtn.disabled = true;
+      connectBtn.textContent = "Connecting…";
+      msg.textContent = "";
+      const ok = await connectSync(token);
+      if (!ok) {
+        connectBtn.disabled = false;
+        connectBtn.textContent = "Connect";
+        msg.textContent = syncCfg.error || "Connection failed.";
+      }
+    };
+  }
+  const pullBtn = document.getElementById("sync-pull-btn");
+  if (pullBtn) pullBtn.onclick = async () => {
+    const ok = await pullFromGist();
+    if (ok) render(); else alert("Pull failed: " + syncCfg.error);
+  };
+  const pushBtn = document.getElementById("sync-push-btn");
+  if (pushBtn) pushBtn.onclick = () => pushToGist();
+  const discBtn = document.getElementById("sync-disconnect-btn");
+  if (discBtn) discBtn.onclick = () => {
+    if (!confirm("Disconnect sync? Your local data won't be affected.")) return;
+    disconnectSync();
+    render();
+  };
+}
+
 let currentTab = "today";
 let currentViewDate = null;
 let currentWeekIdx = null;
@@ -1729,6 +1970,7 @@ function renderDashboard() {
       </div>
     </div>
 
+    ${buildSyncPanel()}
     <div class="panel">
       <h2>Data Management</h2>
       <div class="row">
@@ -1772,10 +2014,14 @@ function renderDashboard() {
     saveState();
     render();
   };
+  wireSyncPanel();
 }
 
-// Init
+// Init — render from localStorage immediately, then pull latest from cloud
 render();
+if (syncCfg.token && syncCfg.gistId) {
+  pullFromGist().then(ok => { if (ok) render(); });
+}
 </script>
 <script>
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
