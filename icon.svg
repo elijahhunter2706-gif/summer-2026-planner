@@ -1,10 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="96" fill="#0e1424"/>
-  <rect x="60" y="140" width="392" height="310" rx="18" fill="#1a2440"/>
-  <rect x="60" y="140" width="392" height="76" rx="18" fill="#6b9cff"/>
-  <rect x="60" y="192" width="392" height="24" fill="#6b9cff"/>
-  <rect x="164" y="108" width="28" height="72" rx="10" fill="#4d7ec9"/>
-  <rect x="320" y="108" width="28" height="72" rx="10" fill="#4d7ec9"/>
-  <text x="256" y="183" font-family="Arial,Helvetica,sans-serif" font-size="38" font-weight="800" fill="white" text-anchor="middle" dominant-baseline="middle">SUMMER</text>
-  <text x="256" y="330" font-family="Arial,Helvetica,sans-serif" font-size="130" font-weight="900" fill="#6b9cff" text-anchor="middle" dominant-baseline="middle">26</text>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFCF3"></stop>
+      <stop offset="1" stop-color="#F5EFE0"></stop>
+    </linearGradient>
+    <radialGradient id="sun" cx="0.5" cy="0.5" r="0.55">
+      <stop offset="0" stop-color="#FFD874"></stop>
+      <stop offset="0.6" stop-color="#EE7E5F"></stop>
+      <stop offset="1" stop-color="#D8623F"></stop>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"></rect>
+  <circle cx="256" cy="256" r="159" fill="url(#sun)"></circle>
 </svg>
