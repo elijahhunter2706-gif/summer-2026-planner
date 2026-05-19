@@ -1,0 +1,14 @@
+{
+  "name": "Summer 2026 Planner",
+  "short_name": "Summer26",
+  "description": "MCAT Prep · Marathon Training · Summer Program",
+  "start_url": "./summer_2026_portal.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0e1424",
+  "theme_color": "#0e1424",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

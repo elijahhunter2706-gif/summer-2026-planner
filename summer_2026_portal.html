@@ -1,0 +1,1786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Summer 2026 · Master Plan Portal</title>
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Summer26">
+<link rel="apple-touch-icon" href="icon.svg">
+<meta name="theme-color" content="#0e1424">
+<style>
+:root {
+  --bg: #0e1424;
+  --bg-2: #131b30;
+  --panel: #1a2440;
+  --panel-2: #232f54;
+  --border: #2d3a5f;
+  --border-2: #3a4773;
+  --text: #ecf0fa;
+  --muted: #8b95b3;
+  --dim: #5a6586;
+  --accent: #6b9cff;
+  --accent-2: #4d7ec9;
+  --run: #3d5db0;
+  --thu: #5b8dff;
+  --tue: #d04b7e;
+  --sat: #3e9c5f;
+  --sun: #6db4d8;
+  --gold: #c9a849;
+  --gold-bg: rgba(201,168,73,0.15);
+  --check: #4ecb71;
+  --danger: #e85d75;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+header.hero {
+  background: linear-gradient(135deg, #1a2440 0%, #0e1424 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 22px 32px;
+}
+.hero-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.5px; }
+.subtitle { color: var(--muted); font-size: 13px; margin-top: 4px; }
+.countdown { display: flex; gap: 28px; }
+.cd-item { text-align: right; }
+.cd-num { font-size: 26px; font-weight: 700; color: var(--accent); line-height: 1; }
+.cd-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-top: 4px; }
+.tabs {
+  display: flex;
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  overflow-x: auto;
+}
+.tabs button {
+  background: none;
+  border: none;
+  color: var(--muted);
+  padding: 14px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.tabs button:hover { color: var(--text); }
+.tabs button.active { color: var(--accent); border-bottom-color: var(--accent); }
+main { padding: 24px 32px 48px; max-width: 1400px; margin: 0 auto; }
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.panel h2 { font-size: 13px; font-weight: 700; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text); }
+.panel h3 { font-size: 11px; font-weight: 700; margin-bottom: 8px; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; }
+
+.today-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; gap: 12px; flex-wrap: wrap; }
+.today-date { font-size: 26px; font-weight: 700; }
+.today-day { color: var(--muted); margin-top: 4px; font-size: 13px; }
+.day-badge { padding: 6px 12px; border-radius: 4px; font-weight: 700; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: white; }
+.badge-mon, .badge-wed, .badge-fri { background: var(--run); }
+.badge-tue { background: var(--tue); }
+.badge-thu { background: var(--thu); }
+.badge-sat { background: var(--sat); }
+.badge-sun { background: var(--sun); color: #0e1424; }
+
+.progress-pill { display: flex; align-items: center; gap: 8px; }
+.mini-bar { width: 120px; height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+.mini-bar-fill { height: 100%; background: var(--check); transition: width 0.3s; }
+
+.task-list { display: flex; flex-direction: column; gap: 8px; }
+.task {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+}
+.task:hover { border-color: var(--border-2); transform: translateX(2px); }
+.task.done { opacity: 0.5; }
+.task.done .task-label { text-decoration: line-through; }
+.checkbox {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--border-2);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--bg-2);
+  transition: all 0.15s;
+}
+.task.done .checkbox {
+  background: var(--check);
+  border-color: var(--check);
+}
+.task.done .checkbox::after {
+  content: "✓";
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  line-height: 1;
+}
+.task-label { font-size: 15px; flex: 1; }
+.task-meta { color: var(--muted); font-size: 12px; }
+
+.cutback-banner {
+  background: var(--gold-bg);
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  padding: 10px 14px;
+  border-radius: 4px;
+  font-size: 13px;
+  margin-bottom: 14px;
+  font-weight: 600;
+}
+
+.week-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
+select, input[type="text"], input[type="number"], input[type="date"] {
+  background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+  padding: 8px 12px; border-radius: 4px; font-size: 13px; font-family: inherit;
+}
+select:focus, input:focus, textarea:focus { outline: none; border-color: var(--accent); }
+.week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+@media (max-width: 1100px) { .week-grid { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 700px) { .week-grid { grid-template-columns: repeat(2, 1fr); } }
+.day-card {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+}
+.day-card.today { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.day-card.cutback { background: var(--gold-bg); }
+.day-card-header { font-weight: 700; font-size: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+.day-tasks { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+.mini-task { display: flex; align-items: flex-start; gap: 6px; font-size: 11.5px; color: var(--text); cursor: pointer; line-height: 1.3; padding: 2px 0; }
+.mini-task:hover { color: var(--accent); }
+.mini-task.done { color: var(--muted); }
+.mini-task.done span { text-decoration: line-through; }
+.mini-check { width: 13px; height: 13px; border: 1.5px solid var(--border-2); border-radius: 3px; flex-shrink: 0; margin-top: 2px; background: var(--bg-2); display: flex; align-items: center; justify-content: center; }
+.mini-task.done .mini-check { background: var(--check); border-color: var(--check); }
+.mini-task.done .mini-check::after { content: "✓"; color: white; font-size: 9px; font-weight: bold; line-height: 1; }
+
+.anki-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; }
+.deck { background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px; padding: 16px; border-left: 4px solid var(--accent); }
+.deck-name { font-weight: 700; font-size: 16px; }
+.deck-stats { color: var(--muted); font-size: 11px; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+.deck-progress { height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; margin: 12px 0 8px; }
+.deck-progress-bar { height: 100%; transition: width 0.3s; }
+.deck-numbers { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px; }
+.deck-input { width: 80px !important; }
+
+.btn { background: var(--accent); color: white; border: none; padding: 8px 14px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.15s; }
+.btn:hover { background: var(--accent-2); }
+.btn-sm { padding: 5px 10px; font-size: 11px; }
+.btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+.btn-ghost:hover { color: var(--text); border-color: var(--border-2); background: var(--panel-2); }
+
+.run-table { width: 100%; border-collapse: collapse; }
+.run-table th, .run-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
+.run-table th { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+.run-table tr.cutback td { background: var(--gold-bg); }
+.run-table tr.today-row td { background: rgba(107,156,255,0.08); }
+.run-table input[type="number"], .run-table input[type="text"] { padding: 5px 8px; font-size: 13px; }
+.bar { background: var(--bg); height: 22px; border-radius: 3px; overflow: hidden; position: relative; border: 1px solid var(--border); min-width: 100px; }
+.bar-fill { height: 100%; background: var(--sat); transition: width 0.3s; }
+.bar-fill.over { background: var(--accent); }
+
+.exam-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 14px; }
+.exam-row { display: flex; flex-direction: column; }
+.exam-row label { font-size: 10px; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+.exam-list { display: flex; flex-direction: column; gap: 6px; }
+.exam-item { padding: 10px 14px; background: var(--panel-2); border-radius: 4px; display: grid; grid-template-columns: 70px 90px 50px 50px 50px 50px 1fr 30px; gap: 10px; align-items: center; font-size: 13px; border: 1px solid var(--border); }
+.exam-item.header { background: transparent; border: none; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; padding: 4px 14px; }
+@media (max-width: 800px) { .exam-item { grid-template-columns: 1fr 1fr; gap: 6px; font-size: 12px; } .exam-item.header { display: none; } }
+
+.dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.stat-card { background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px; padding: 16px; }
+.stat-label { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+.stat-value { font-size: 28px; font-weight: 700; margin-top: 6px; line-height: 1.1; }
+.stat-sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
+.stat-value .frac { font-size: 14px; color: var(--muted); font-weight: 500; }
+
+.pillar-bars { display: flex; flex-direction: column; gap: 18px; }
+.pillar-head { display: flex; justify-content: space-between; margin-bottom: 6px; align-items: baseline; }
+.pillar-name { font-weight: 700; font-size: 14px; }
+.pillar-pct { color: var(--accent); font-weight: 700; font-size: 14px; }
+.pillar-bar { height: 14px; background: var(--bg); border-radius: 7px; overflow: hidden; }
+.pillar-bar-fill { height: 100%; transition: width 0.4s; border-radius: 7px; }
+.pillar-mcat .pillar-bar-fill { background: linear-gradient(90deg, #4d7ec9, #6b9cff); }
+.pillar-run .pillar-bar-fill { background: linear-gradient(90deg, #3e9c5f, #5cc079); }
+.pillar-anki .pillar-bar-fill { background: linear-gradient(90deg, #a64dff, #d579ff); }
+
+textarea.notes { width: 100%; min-height: 70px; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 10px 12px; border-radius: 4px; font-family: inherit; font-size: 13px; resize: vertical; }
+
+.empty { text-align: center; padding: 32px; color: var(--muted); font-style: italic; }
+.delete-btn { background: transparent; border: none; color: var(--danger); cursor: pointer; padding: 4px 8px; font-size: 16px; }
+.delete-btn:hover { opacity: 0.7; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.hint { color: var(--muted); font-size: 12px; }
+.sleep-block { background: var(--bg-2); border-left: 3px solid var(--sun); padding: 10px 14px; border-radius: 4px; font-size: 13px; color: var(--muted); }
+.sleep-block strong { color: var(--text); }
+/* ---- Override editor ---- */
+.override-panel { border-left: 3px solid var(--gold) !important; background: rgba(201,168,73,0.04) !important; }
+.override-separator { border: none; border-top: 1px dashed var(--border); margin: 18px 0; }
+.form-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 12px; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+.form-group input[type="time"] { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 8px 10px; border-radius: 4px; font-size: 13px; font-family: inherit; color-scheme: dark; }
+.scope-toggle { display: flex; }
+.scope-btn { background: var(--bg); border: 1px solid var(--border); color: var(--muted); padding: 8px 12px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+.scope-btn:first-child { border-radius: 4px 0 0 4px; }
+.scope-btn:last-child { border-radius: 0 4px 4px 0; border-left: none; }
+.scope-btn.active { background: var(--gold); border-color: var(--gold); color: #1a1200; }
+.act-toggle { display: flex; }
+.act-btn { background: var(--bg); border: 1px solid var(--border); color: var(--muted); padding: 8px 14px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+.act-btn:first-child { border-radius: 4px 0 0 4px; }
+.act-btn:last-child { border-radius: 0 4px 4px 0; border-left: none; }
+.act-btn:not(:first-child) { border-left: none; }
+.act-btn.active-normal { background: rgba(78,203,113,0.2); border-color: var(--check); color: var(--check); }
+.act-btn.active-skip  { background: rgba(232,93,117,0.18); border-color: var(--danger); color: var(--danger); }
+.act-btn.active-rest  { background: rgba(107,156,255,0.18); border-color: var(--accent); color: var(--accent); }
+.override-indicator { display: inline-flex; align-items: center; gap: 4px; background: rgba(201,168,73,0.15); border: 1px solid var(--gold); color: var(--gold); padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
+.override-banner { padding: 9px 14px; border-radius: 4px; font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+.override-banner.skip { background: rgba(232,93,117,0.12); border: 1px solid var(--danger); color: var(--danger); }
+.override-banner.rest { background: rgba(107,156,255,0.12); border: 1px solid var(--accent); color: var(--accent); }
+.task-override-note { font-size: 11px; color: var(--danger); margin-top: 2px; }
+.task.overridden .task-label { text-decoration: line-through; color: var(--muted); }
+.task.overridden { opacity: 0.65; }
+.week-ovr-dot { display: inline-block; width: 7px; height: 7px; background: var(--gold); border-radius: 50%; margin-left: 4px; vertical-align: middle; title: "Has override"; }
+
+.resource-links { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.resource-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--panel-2); border: 1px solid var(--border);
+  color: var(--text); text-decoration: none;
+  padding: 9px 14px; border-radius: 6px; font-size: 13px; font-weight: 600;
+  transition: border-color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+.resource-btn:hover { border-color: var(--sat); background: rgba(62,156,95,0.12); color: var(--sat); }
+.resource-icon { color: var(--sat); font-size: 11px; }
+.resource-btn:hover .resource-icon { color: var(--sat); }
+.resource-dur { color: var(--muted); font-size: 11px; font-weight: 400; }
+
+.exam-chart { display: flex; align-items: flex-end; gap: 4px; height: 100px; padding: 12px 0; border-bottom: 1px dashed var(--border); margin-bottom: 12px; }
+.exam-bar { flex: 1; background: var(--accent); border-radius: 3px 3px 0 0; position: relative; min-width: 20px; transition: all 0.2s; }
+.exam-bar:hover { background: var(--accent-2); }
+.exam-bar-label { position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--muted); white-space: nowrap; }
+.exam-bar-value { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 11px; color: var(--text); font-weight: 600; }
+
+/* ---- PWA / Touch targets ---- */
+.btn {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn.btn-sm { min-height: 38px; }
+.task { min-height: 48px; }
+
+/* ---- Scrollable table wrapper ---- */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.table-scroll .run-table { min-width: 440px; }
+
+/* ---- Mobile responsive (≤ 520px) ---- */
+@media (max-width: 520px) {
+  main { padding: 10px 10px 72px; max-width: 100%; }
+  header.hero { padding: 14px 14px; }
+  h1 { font-size: 17px; }
+  .subtitle { font-size: 11px; }
+  .countdown { gap: 14px; }
+  .cd-num { font-size: 18px; }
+  .panel { padding: 14px 10px; }
+  .panel h2 { font-size: 12px; letter-spacing: 1px; }
+  .tabs { padding: 0; }
+  .tabs button { padding: 11px 10px; font-size: 11px; }
+  .today-date { font-size: 20px; }
+  .today-day { font-size: 11px; }
+  .anki-grid { grid-template-columns: 1fr; }
+  .dash-grid { grid-template-columns: repeat(2, 1fr); }
+  .stat-value { font-size: 22px; }
+  .deck-name { font-size: 14px; }
+  .form-row { flex-direction: column; }
+  .resource-links { flex-direction: column; }
+  .resource-btn { width: 100%; }
+  .week-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .run-table th, .run-table td { padding: 8px 6px; font-size: 12px; }
+  .exam-form { grid-template-columns: repeat(2, 1fr); }
+  /* Safe area insets for iPhone notch/home bar */
+  header.hero { padding-top: max(14px, env(safe-area-inset-top)); }
+  main { padding-bottom: max(72px, calc(60px + env(safe-area-inset-bottom))); }
+}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="hero-row">
+    <div>
+      <h1>SUMMER 2026 · MASTER PLAN</h1>
+      <div class="subtitle">MCAT Prep · Marathon Training · Summer Program</div>
+    </div>
+    <div class="countdown" id="countdown"></div>
+  </div>
+</header>
+<nav class="tabs" id="tabs">
+  <button data-tab="today" class="active">Today</button>
+  <button data-tab="week">Week</button>
+  <button data-tab="anki">Anki</button>
+  <button data-tab="running">Running</button>
+  <button data-tab="mcat">MCAT Exams</button>
+  <button data-tab="dashboard">Dashboard</button>
+</nav>
+<main id="content"></main>
+
+<script>
+// ============================================================
+// SCHEDULE DATA — from the Summer 2026 Master Planner PDFs
+// plan = [MON, TUE, WED, THU, FRI, SAT, SUN]
+// numeric = miles (run); string = cross-train; null = rest
+// ============================================================
+const WEEKS = [
+  { id:1,  label:"Pre Wk 1",  start:"2026-05-18", total:10, cutback:false, program:false, plan:[2.5,null,2.5,"Bike 30m",1.5,3.5,null] },
+  { id:2,  label:"Pre Wk 2",  start:"2026-05-25", total:11, cutback:false, program:false, plan:[2.5,null,2.5,"Swim 30m",2.0,4.0,null] },
+  { id:3,  label:"Pre Wk 3",  start:"2026-06-01", total:12, cutback:false, program:false, plan:[3.0,null,2.5,"Bike 35m",2.5,4.0,null] },
+  { id:4,  label:"Prog Wk 1", start:"2026-06-08", total:13, cutback:false, program:true,  plan:[3.0,null,3.0,"Swim 30m",2.5,4.5,null] },
+  { id:5,  label:"Prog Wk 2", start:"2026-06-15", total:15, cutback:false, program:true,  plan:[3.5,null,3.5,"Bike 35m",3.0,5.0,null] },
+  { id:6,  label:"Prog Wk 3", start:"2026-06-22", total:16, cutback:false, program:true,  plan:[4.0,null,3.5,"Swim 35m",3.0,5.5,null] },
+  { id:7,  label:"Prog Wk 4", start:"2026-06-29", total:12, cutback:true,  program:true,  plan:[3.0,null,2.5,"Bike 25m",2.5,4.0,null] },
+  { id:8,  label:"Prog Wk 5", start:"2026-07-06", total:17, cutback:false, program:true,  plan:[4.0,null,3.5,"Swim 40m",3.5,6.0,null] },
+  { id:9,  label:"Prog Wk 6", start:"2026-07-13", total:19, cutback:false, program:true,  plan:[4.5,null,4.5,"Bike 45m",3.5,6.5,null] },
+  { id:10, label:"Prog Wk 7", start:"2026-07-20", total:21, cutback:false, program:true,  plan:[5.0,null,5.0,"Swim 45m",4.0,7.0,null] },
+  { id:11, label:"Prog Wk 8", start:"2026-07-27", total:16, cutback:true,  program:true,  plan:[4.0,null,3.5,"Bike 30m",3.0,5.5,null] },
+];
+
+const DOW_LABELS = ["MON","TUE","WED","THU","FRI","SAT","SUN"];
+const DOW_FULL = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+
+const ANKI_DECKS = [
+  { id:"behavioral", name:"Behavioral", total:827, perDay:11, color:"#a64dff", est:"Aug 1" },
+  { id:"biochem",    name:"Biochem",    total:515, perDay:7,  color:"#ff8c42", est:"Jul 30" },
+  { id:"biology",    name:"Biology",    total:604, perDay:8,  color:"#4ecb71", est:"Aug 1" },
+  { id:"equations",  name:"Equations",  total:91,  perDay:1,  color:"#ffd93d", est:"Aug 17" },
+  { id:"genchem",    name:"Gen Chem",   total:250, perDay:3,  color:"#4dd9ff", est:"Aug 9" },
+  { id:"ochem",      name:"Ochem",      total:287, perDay:4,  color:"#ff4d6d", est:"Jul 28" },
+  { id:"physmath",   name:"Phys/Math",  total:313, perDay:4,  color:"#5b8dff", est:"Aug 4" },
+];
+const ANKI_TOTAL = ANKI_DECKS.reduce((s,d) => s + d.total, 0); // 2887
+const ANKI_PER_DAY = ANKI_DECKS.reduce((s,d) => s + d.perDay, 0); // 38
+
+const MARATHON_DATE = "2027-01-18";
+const SUMMER_START = "2026-05-18";
+const SUMMER_END = "2026-08-02";
+
+// ============================================================
+// HELPERS
+// ============================================================
+function isoDate(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,"0");
+  const day = String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
+}
+function todayISO() { return isoDate(new Date()); }
+function parseISO(iso) { return new Date(iso + "T12:00:00"); }
+function addDays(iso, n) { const d = parseISO(iso); d.setDate(d.getDate()+n); return isoDate(d); }
+function dayIdxFromISO(iso) { return (parseISO(iso).getDay() + 6) % 7; }
+function findWeek(iso) {
+  for (const w of WEEKS) {
+    const end = addDays(w.start, 6);
+    if (iso >= w.start && iso <= end) return w;
+  }
+  return null;
+}
+function daysBetween(a, b) {
+  return Math.round((parseISO(b) - parseISO(a)) / 86400000);
+}
+function formatDate(iso) {
+  return parseISO(iso).toLocaleDateString("en-US", { month:"long", day:"numeric", year:"numeric" });
+}
+function shortDate(iso) {
+  const d = parseISO(iso);
+  return `${d.getMonth()+1}/${d.getDate()}`;
+}
+function escapeHtml(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c]);
+}
+
+// ============================================================
+// TASK GENERATION
+// ============================================================
+function getDayInfo(iso) {
+  const week = findWeek(iso);
+  const dayIdx = dayIdxFromISO(iso);
+  const dow = DOW_LABELS[dayIdx];
+  if (!week) return { iso, week:null, dow, dayIdx, tasks: [] };
+  const plan = week.plan[dayIdx];
+  const tasks = [];
+
+  if (dow === "TUE") {
+    tasks.push({ id:"stretch", label:"Stretch 10 min" });
+    if (week.program) tasks.push({ id:"program", label:"Summer Program 8 am – 5 pm" });
+    tasks.push({ id:"rest", label:"National Soren Day — full rest · No MCAT · No Anki ♥", info:true });
+  } else if (dow === "SUN") {
+    tasks.push({ id:"stretch", label:"Stretch 10 min · easy walk" });
+    tasks.push({ id:"exam", label:"Full MCAT Practice Exam" });
+    tasks.push({ id:"examreview", label:"Exam Review + Analysis" });
+    tasks.push({ id:"anki", label:"Anki — reviews ONLY (no new cards)" });
+  } else if (dow === "SAT") {
+    tasks.push({ id:"run", label:`Long Run ${plan} mi · Zone 2 (longest of week)`, miles: plan });
+    tasks.push({ id:"stretch", label:"Stretch 10 min" });
+    tasks.push({ id:"mcat", label:"MCAT Study 2 hrs" });
+    tasks.push({ id:"anki", label:`Anki ${ANKI_PER_DAY} new + reviews` });
+  } else if (dow === "THU") {
+    tasks.push({ id:"run", label:`${plan} · Zone 1–2 (cross-train)`, cross:true });
+    tasks.push({ id:"stretch", label:"Stretch 10 min" });
+    if (week.program) tasks.push({ id:"program", label:"Summer Program 8 am – 5 pm" });
+    tasks.push({ id:"mcat", label:"MCAT Study 2 hrs" });
+    tasks.push({ id:"anki", label:`Anki ${ANKI_PER_DAY} new + reviews` });
+  } else { // MON, WED, FRI
+    tasks.push({ id:"run", label:`Run ${plan} mi · Zone 2`, miles: plan });
+    tasks.push({ id:"stretch", label:"Stretch 10 min" });
+    if (week.program) tasks.push({ id:"program", label:"Summer Program 8 am – 5 pm" });
+    tasks.push({ id:"mcat", label:"MCAT Study 2 hrs" });
+    tasks.push({ id:"anki", label:`Anki ${ANKI_PER_DAY} new + reviews` });
+  }
+
+  let sleep = "10:00 pm → 5:45 am · 7 h 45 min";
+  if (dow === "TUE") sleep = "10:30 pm → 7:00 am · 8 h 30 min";
+  else if (dow === "SAT") sleep = "10:00 pm → 6:30 am · 8 h 30 min";
+  else if (dow === "SUN") sleep = "10:00 pm → 7:00 am · 9 h";
+
+  return { iso, week, dow, dayIdx, tasks, sleep, plan };
+}
+
+// ============================================================
+// STATE / PERSISTENCE
+// ============================================================
+const STORAGE_KEY = "summer2026_portal_v1";
+
+function defaultState() {
+  return {
+    checks: {},      // checks[date][taskId] = true
+    notes: {},       // notes[date] = string
+    anki: Object.fromEntries(ANKI_DECKS.map(d => [d.id, 0])),
+    ankiDaily: {},   // ankiDaily[date][deckId] = cards completed that day
+    runs: {},        // runs[date] = { actual, notes }
+    exams: [],
+    overrides: {},   // overrides[date] = { sleep?: {bedtime,wake,scope}, activity?: {type,note} }
+  };
+}
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return defaultState();
+    const s = JSON.parse(raw);
+    const def = defaultState();
+    return {
+      checks: s.checks || {},
+      notes: s.notes || {},
+      anki: { ...def.anki, ...(s.anki || {}) },
+      ankiDaily: s.ankiDaily || {},
+      runs: s.runs || {},
+      exams: s.exams || [],
+      overrides: s.overrides || {},
+    };
+  } catch (e) { return defaultState(); }
+}
+function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function isChecked(date, taskId) { return !!(state.checks[date] && state.checks[date][taskId]); }
+function setCheck(date, taskId, val) {
+  if (!state.checks[date]) state.checks[date] = {};
+  if (val) state.checks[date][taskId] = true;
+  else delete state.checks[date][taskId];
+  if (Object.keys(state.checks[date]).length === 0) delete state.checks[date];
+  saveState();
+}
+
+let state = loadState();
+let currentTab = "today";
+let currentViewDate = null;
+let currentWeekIdx = null;
+let currentEditDate = null; // date string when the override editor is open, null when closed
+
+// ============================================================
+// SCHEDULE OVERRIDES
+// ============================================================
+const DEFAULT_SLEEP = {
+  MON: { bedtime: "22:00", wake: "05:45" },
+  TUE: { bedtime: "22:30", wake: "07:00" },
+  WED: { bedtime: "22:00", wake: "05:45" },
+  THU: { bedtime: "22:00", wake: "05:45" },
+  FRI: { bedtime: "22:00", wake: "05:45" },
+  SAT: { bedtime: "22:00", wake: "06:30" },
+  SUN: { bedtime: "22:00", wake: "07:00" },
+};
+
+function formatTime12(hhmm) {
+  const [h, m] = hhmm.split(":").map(Number);
+  const period = h < 12 ? "am" : "pm";
+  const h12 = (h % 12) || 12;
+  return `${h12}:${String(m).padStart(2, "0")} ${period}`;
+}
+function sleepDuration(bedtime, wake) {
+  const [bh, bm] = bedtime.split(":").map(Number);
+  const [wh, wm] = wake.split(":").map(Number);
+  let mins = (wh * 60 + wm) - (bh * 60 + bm);
+  if (mins < 0) mins += 1440;
+  const h = Math.floor(mins / 60), mn = mins % 60;
+  return mn === 0 ? `${h} h` : `${h} h ${mn} m`;
+}
+function formatSleepBlock(s) {
+  return `${formatTime12(s.bedtime)} → ${formatTime12(s.wake)} · ${sleepDuration(s.bedtime, s.wake)}`;
+}
+
+// Returns the sleep object {bedtime, wake} in effect for a given date, considering overrides.
+function resolvedSleepForDate(date) {
+  const dow = DOW_LABELS[dayIdxFromISO(date)];
+  const own = state.overrides[date];
+  // 1. This day has its own sleep override
+  if (own && own.sleep && own.sleep.scope === "day") return own.sleep;
+  // 2. Most recent "forward" override on or before this date
+  const fwd = Object.keys(state.overrides)
+    .filter(d => d <= date && state.overrides[d].sleep && state.overrides[d].sleep.scope === "forward")
+    .sort().reverse();
+  if (fwd.length > 0) return state.overrides[fwd[0]].sleep;
+  // 3. Schedule default
+  return DEFAULT_SLEEP[dow];
+}
+
+// Returns the date string of the "forward" override affecting this date (if any, from an earlier date).
+function inheritedForwardSleepFrom(date) {
+  const fwd = Object.keys(state.overrides)
+    .filter(d => d < date && state.overrides[d].sleep && state.overrides[d].sleep.scope === "forward")
+    .sort().reverse();
+  return fwd.length > 0 ? fwd[0] : null;
+}
+
+// Does this date have its own stored override (not inherited)?
+function hasOwnOverride(date) {
+  const o = state.overrides[date];
+  return !!(o && (o.sleep || o.activity));
+}
+
+function setOverrideProp(date, key, value) {
+  if (!state.overrides[date]) state.overrides[date] = {};
+  if (value === null || value === undefined) {
+    delete state.overrides[date][key];
+    if (Object.keys(state.overrides[date]).length === 0) delete state.overrides[date];
+  } else {
+    state.overrides[date][key] = value;
+  }
+  saveState();
+}
+
+// Build the override editor panel HTML (called from renderToday when editor is open)
+function buildEditPanel(viewDate, info) {
+  const ovr = state.overrides[viewDate] || {};
+  const sleepObj = resolvedSleepForDate(viewDate);
+  const hasSleepOvr = !!(ovr.sleep);
+  const sleepScope = hasSleepOvr ? ovr.sleep.scope : "day";
+  const actType = (ovr.activity && ovr.activity.type) || "";
+  const actNote = (ovr.activity && ovr.activity.note) || "";
+  const isAlreadyRestDay = info.dow === "TUE";
+  const hasAny = hasOwnOverride(viewDate);
+
+  const fwdNote = sleepScope === "forward"
+    ? `<div class="hint" style="margin-top:6px; color:var(--gold);">Updates all future days from ${shortDate(viewDate)} until a later override is set.</div>`
+    : `<div class="hint" style="margin-top:6px;">Only changes this specific night.</div>`;
+
+  const noteField = actType ? `
+    <div class="form-row" style="margin-top:10px;">
+      <div class="form-group" style="flex:1; min-width:200px;">
+        <label>Reason / note</label>
+        <input type="text" id="ovr-act-note" value="${escapeHtml(actNote)}" placeholder="Knee pain, travel, sick day, race prep…" style="width:100%;">
+      </div>
+    </div>` : "";
+
+  return `
+    <div class="panel override-panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:8px;">
+        <h2 style="color:var(--gold); margin-bottom:0;">✏ Schedule Override · ${DOW_FULL[info.dayIdx]} ${shortDate(viewDate)}</h2>
+        <button class="btn btn-sm btn-ghost" id="reset-all-ovr" style="color:var(--danger); border-color:var(--danger);" ${!hasAny ? "disabled style='opacity:0.4;'" : ""}>Reset all overrides for this day</button>
+      </div>
+
+      <h3>Sleep</h3>
+      <div class="form-row" style="margin-top:8px;">
+        <div class="form-group">
+          <label>Bedtime</label>
+          <input type="time" id="ovr-bedtime" value="${hasSleepOvr ? ovr.sleep.bedtime : sleepObj.bedtime}">
+        </div>
+        <div class="form-group">
+          <label>Wake time</label>
+          <input type="time" id="ovr-wake" value="${hasSleepOvr ? ovr.sleep.wake : sleepObj.wake}">
+        </div>
+        <div class="form-group">
+          <label>Apply to</label>
+          <div class="scope-toggle">
+            <button class="scope-btn ${sleepScope === "day" ? "active" : ""}" id="scope-day">This night only</button>
+            <button class="scope-btn ${sleepScope === "forward" ? "active" : ""}" id="scope-fwd">From this night forward</button>
+          </div>
+          ${fwdNote}
+        </div>
+      </div>
+      <div class="row">
+        <button class="btn btn-sm" id="save-sleep-ovr">Save sleep override</button>
+        ${hasSleepOvr ? `<button class="btn btn-sm btn-ghost" id="reset-sleep-ovr">Reset to default</button>` : ""}
+      </div>
+
+      <hr class="override-separator">
+
+      <h3>Activity</h3>
+      ${isAlreadyRestDay ? `<div class="hint" style="margin-bottom:8px;">Tuesday is already a scheduled rest day — no activity override needed.</div>` : ""}
+      <div class="act-toggle" style="${isAlreadyRestDay ? "opacity:0.4; pointer-events:none;" : ""}">
+        <button class="act-btn ${!actType ? "active-normal" : ""}" data-act="">Normal plan</button>
+        <button class="act-btn ${actType === "skip" ? "active-skip" : ""}" data-act="skip">Skip run / cross-train</button>
+        <button class="act-btn ${actType === "rest" ? "active-rest" : ""}" data-act="rest">Full rest day</button>
+      </div>
+      ${noteField}
+      <div class="row" style="margin-top:12px;">
+        ${actType ? `<button class="btn btn-sm btn-ghost" id="reset-act-ovr">Reset activity to original plan</button>` : ""}
+      </div>
+    </div>
+  `;
+}
+
+function wireUpEditPanel(viewDate) {
+  // Sleep scope toggle (visual only until Save is clicked)
+  let selectedScope = (() => {
+    const o = state.overrides[viewDate];
+    return (o && o.sleep && o.sleep.scope) || "day";
+  })();
+  const scopeDay = document.getElementById("scope-day");
+  const scopeFwd = document.getElementById("scope-fwd");
+  const updateScope = (s) => {
+    selectedScope = s;
+    scopeDay.classList.toggle("active", s === "day");
+    scopeFwd.classList.toggle("active", s === "forward");
+    const hint = scopeFwd.parentElement.nextElementSibling;
+    if (hint) hint.innerHTML = s === "forward"
+      ? `Updates all future days from ${shortDate(viewDate)} until a later override is set.`
+      : `Only changes this specific night.`;
+  };
+  if (scopeDay) scopeDay.onclick = () => updateScope("day");
+  if (scopeFwd) scopeFwd.onclick = () => updateScope("forward");
+
+  // Save sleep
+  const saveSleepBtn = document.getElementById("save-sleep-ovr");
+  if (saveSleepBtn) saveSleepBtn.onclick = () => {
+    const bedtime = document.getElementById("ovr-bedtime").value;
+    const wake = document.getElementById("ovr-wake").value;
+    if (!bedtime || !wake) { alert("Enter both bedtime and wake time."); return; }
+    setOverrideProp(viewDate, "sleep", { bedtime, wake, scope: selectedScope });
+    renderToday();
+  };
+
+  // Reset sleep
+  const resetSleepBtn = document.getElementById("reset-sleep-ovr");
+  if (resetSleepBtn) resetSleepBtn.onclick = () => {
+    setOverrideProp(viewDate, "sleep", null);
+    renderToday();
+  };
+
+  // Activity toggle buttons — save immediately on click
+  for (const btn of content.querySelectorAll(".act-btn")) {
+    btn.onclick = () => {
+      const type = btn.dataset.act;
+      const existingNote = (state.overrides[viewDate] && state.overrides[viewDate].activity && state.overrides[viewDate].activity.note) || "";
+      setOverrideProp(viewDate, "activity", type ? { type, note: existingNote } : null);
+      renderToday();
+    };
+  }
+
+  // Activity note — auto-save on blur
+  const noteEl = document.getElementById("ovr-act-note");
+  if (noteEl) noteEl.addEventListener("change", () => {
+    const o = state.overrides[viewDate];
+    if (o && o.activity) {
+      o.activity.note = noteEl.value;
+      saveState();
+    }
+  });
+
+  // Reset activity
+  const resetActBtn = document.getElementById("reset-act-ovr");
+  if (resetActBtn) resetActBtn.onclick = () => {
+    setOverrideProp(viewDate, "activity", null);
+    renderToday();
+  };
+
+  // Reset all
+  const resetAllBtn = document.getElementById("reset-all-ovr");
+  if (resetAllBtn) resetAllBtn.onclick = () => {
+    if (!confirm(`Reset all overrides for ${formatDate(viewDate)}?`)) return;
+    delete state.overrides[viewDate];
+    saveState();
+    renderToday();
+  };
+}
+
+// ============================================================
+// ANKI BACKLOG TRACKING
+// New cards happen Mon/Wed/Thu/Fri/Sat. Sundays = reviews only.
+// Tuesdays = no Anki. Missed cards roll forward and redistribute
+// across remaining card-days in the week; any week-end deficit
+// carries to the next week.
+// ============================================================
+const CARD_DAY_SET = new Set(["MON","WED","THU","FRI","SAT"]);
+function isCardDay(iso) { return CARD_DAY_SET.has(DOW_LABELS[dayIdxFromISO(iso)]); }
+
+function ankiDailyEntry(date, deckId) {
+  return (state.ankiDaily[date] || {})[deckId] || 0;
+}
+function setAnkiDaily(date, deckId, value) {
+  value = Math.max(0, Math.floor(value || 0));
+  if (!state.ankiDaily[date]) state.ankiDaily[date] = {};
+  if (value > 0) state.ankiDaily[date][deckId] = value;
+  else delete state.ankiDaily[date][deckId];
+  if (Object.keys(state.ankiDaily[date]).length === 0) delete state.ankiDaily[date];
+  saveState();
+}
+
+const _cardDayCountCache = {};
+function cardDayCountThrough(throughDate) {
+  if (throughDate < SUMMER_START) return 0;
+  const cap = throughDate > SUMMER_END ? SUMMER_END : throughDate;
+  if (_cardDayCountCache[cap] !== undefined) return _cardDayCountCache[cap];
+  let count = 0;
+  let d = SUMMER_START;
+  while (d <= cap) {
+    if (isCardDay(d)) count++;
+    d = addDays(d, 1);
+  }
+  _cardDayCountCache[cap] = count;
+  return count;
+}
+
+// Cumulative cards completed for deck through end of given date
+function ankiActualThrough(deckId, throughDate) {
+  let sum = state.anki[deckId] || 0; // legacy baseline counts as already-done
+  for (const d in state.ankiDaily) {
+    if (d <= throughDate) sum += state.ankiDaily[d][deckId] || 0;
+  }
+  return sum;
+}
+function ankiActualTotal(deckId) { return ankiActualThrough(deckId, SUMMER_END); }
+
+// Cumulative base target for deck through end of given date (capped at deck size)
+function ankiBaseThrough(deckId, throughDate) {
+  const deck = ANKI_DECKS.find(d => d.id === deckId);
+  return Math.min(deck.total, cardDayCountThrough(throughDate) * deck.perDay);
+}
+
+// Signed backlog through end of date: positive = behind, negative = ahead
+function ankiBacklog(deckId, throughDate) {
+  return ankiBaseThrough(deckId, throughDate) - ankiActualThrough(deckId, throughDate);
+}
+
+// Today's adjusted target = base + share of (carried backlog + within-week deficit), redistributed over remaining card-days of the week. Only positive backlog redistributes; being ahead doesn't reduce future targets.
+function ankiAdjustedTarget(deckId, date) {
+  const deck = ANKI_DECKS.find(d => d.id === deckId);
+  if (date < SUMMER_START || date > SUMMER_END) return 0;
+  if (!isCardDay(date)) return 0;
+  const week = findWeek(date);
+  if (!week) return deck.perDay;
+
+  // Card-days in this week (Mon, Wed, Thu, Fri, Sat)
+  const weekDays = [];
+  for (let i = 0; i < 7; i++) {
+    const d = addDays(week.start, i);
+    if (isCardDay(d)) weekDays.push(d);
+  }
+  const totalWeekBase = weekDays.length * deck.perDay;
+
+  // Positive backlog carried from prior weeks
+  const dayBeforeWeek = addDays(week.start, -1);
+  const carry = dayBeforeWeek >= SUMMER_START ? Math.max(0, ankiBacklog(deckId, dayBeforeWeek)) : 0;
+
+  // Actual completed this week through yesterday
+  let actualSoFar = 0;
+  for (const d of weekDays) {
+    if (d < date) actualSoFar += ankiDailyEntry(d, deckId);
+  }
+
+  // Remaining card-days in this week including today
+  const remainingDays = weekDays.filter(d => d >= date).length;
+  if (remainingDays === 0) return 0;
+
+  const totalRemainingWork = totalWeekBase + carry - actualSoFar;
+  const target = Math.round(totalRemainingWork / remainingDays);
+
+  // Cap by cards still left in this deck
+  const done = ankiActualThrough(deckId, addDays(date, -1));
+  const cardsLeft = Math.max(0, deck.total - done);
+  return Math.max(0, Math.min(target, cardsLeft));
+}
+
+function formatBacklog(n) {
+  if (n > 0) return `<span style="color:var(--danger); font-weight:600;">${n} behind</span>`;
+  if (n < 0) return `<span style="color:var(--check); font-weight:600;">${Math.abs(n)} ahead</span>`;
+  return `<span style="color:var(--muted);">on track</span>`;
+}
+
+// Shared Anki check-in panel — used on Today tab and Anki tab
+function ankiCheckinPanelHTML(viewDate) {
+  const isCard = isCardDay(viewDate);
+  const dow = DOW_LABELS[dayIdxFromISO(viewDate)];
+
+  let totalActual = 0, totalTarget = 0, totalBacklogBefore = 0;
+  const rows = ANKI_DECKS.map(deck => {
+    const target = ankiAdjustedTarget(deck.id, viewDate);
+    const actual = ankiDailyEntry(viewDate, deck.id);
+    const backlogBefore = ankiBacklog(deck.id, addDays(viewDate, -1));
+    totalActual += actual;
+    totalTarget += target;
+    totalBacklogBefore += backlogBefore;
+    return { deck, target, actual, backlogBefore };
+  });
+
+  if (!isCard) {
+    const msg = dow === "TUE"
+      ? "Tuesday — National Soren Day. No Anki today."
+      : (dow === "SUN" ? "Sunday — reviews only. No new cards today." : "Outside summer plan range.");
+    return `
+      <div class="panel">
+        <h2>Anki · ${dow} ${shortDate(viewDate)}</h2>
+        <div class="hint">${msg} Backlog carrying: ${formatBacklog(totalBacklogBefore)}.</div>
+      </div>
+    `;
+  }
+
+  const rowsHtml = rows.map(({ deck, target, actual, backlogBefore }) => {
+    const backlogAfter = backlogBefore + deck.perDay - actual;
+    const extra = target - deck.perDay;
+    const extraTag = extra > 0 ? ` <span class="hint" style="color:var(--gold);">+${extra}</span>` : "";
+    const targetStyle = extra > 0 ? 'style="color:var(--gold); font-weight:700;"' : "";
+    return `
+      <tr>
+        <td><span style="display:inline-block; width:10px; height:10px; background:${deck.color}; border-radius:2px; margin-right:8px; vertical-align:middle;"></span><strong>${deck.name}</strong></td>
+        <td style="color:var(--muted);">${deck.perDay}</td>
+        <td ${targetStyle}>${target}${extraTag}</td>
+        <td><input type="number" min="0" max="999" data-checkin-deck="${deck.id}" data-checkin-date="${viewDate}" value="${actual || ""}" placeholder="${target}" style="width:72px;"></td>
+        <td>${formatBacklog(backlogAfter)}</td>
+      </tr>
+    `;
+  }).join("");
+
+  const totalExtra = totalTarget - ANKI_PER_DAY;
+  const totalBacklogAfter = totalBacklogBefore + ANKI_PER_DAY - totalActual;
+  const totalExtraTag = totalExtra > 0 ? ` <span class="hint" style="color:var(--gold);">+${totalExtra}</span>` : "";
+  const totalStyle = totalExtra > 0 ? 'style="color:var(--gold); font-weight:700;"' : "";
+
+  return `
+    <div class="panel">
+      <h2>Anki Check-in · ${dow} ${shortDate(viewDate)}</h2>
+      <div class="table-scroll">
+      <table class="run-table">
+        <thead><tr><th>Deck</th><th>Base</th><th>Today's Target</th><th>Done</th><th>Backlog After</th></tr></thead>
+        <tbody>${rowsHtml}</tbody>
+        <tfoot>
+          <tr style="border-top:2px solid var(--border-2);">
+            <td><strong>TOTAL</strong></td>
+            <td style="color:var(--muted);"><strong>${ANKI_PER_DAY}</strong></td>
+            <td ${totalStyle}><strong>${totalTarget}</strong>${totalExtraTag}</td>
+            <td><strong>${totalActual}</strong></td>
+            <td><strong>${formatBacklog(totalBacklogAfter)}</strong></td>
+          </tr>
+        </tfoot>
+      </table>
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <button class="btn btn-sm" data-anki-action="fill-all" data-date="${viewDate}">Hit all targets</button>
+        <button class="btn btn-sm btn-ghost" data-anki-action="clear" data-date="${viewDate}">Clear day</button>
+        <div class="hint" style="margin-left:auto;">Missed cards redistribute across remaining card-days this week (Mon · Wed · Thu · Fri · Sat).</div>
+      </div>
+    </div>
+  `;
+}
+
+function wireUpAnkiCheckin(viewDate, rerender) {
+  // Capture focus before re-render to restore after
+  function withFocusPreserved(fn) {
+    const ae = document.activeElement;
+    const info = ae && ae.dataset && ae.dataset.checkinDeck
+      ? { deckId: ae.dataset.checkinDeck, date: ae.dataset.checkinDate }
+      : null;
+    fn();
+    if (info) {
+      const sel = `input[data-checkin-deck="${info.deckId}"][data-checkin-date="${info.date}"]`;
+      const el = document.querySelector(sel);
+      if (el) { el.focus(); el.select(); }
+    }
+  }
+  for (const inp of content.querySelectorAll("input[data-checkin-deck]")) {
+    inp.addEventListener("change", () => {
+      const deckId = inp.dataset.checkinDeck;
+      const date = inp.dataset.checkinDate;
+      setAnkiDaily(date, deckId, parseInt(inp.value) || 0);
+      withFocusPreserved(rerender);
+    });
+  }
+  for (const btn of content.querySelectorAll("button[data-anki-action]")) {
+    btn.addEventListener("click", () => {
+      const action = btn.dataset.ankiAction;
+      const date = btn.dataset.date;
+      if (action === "fill-all") {
+        for (const d of ANKI_DECKS) setAnkiDaily(date, d.id, ankiAdjustedTarget(d.id, date));
+      } else if (action === "clear") {
+        if (!confirm("Clear this day's Anki check-in?")) return;
+        for (const d of ANKI_DECKS) setAnkiDaily(date, d.id, 0);
+      }
+      rerender();
+    });
+  }
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+const content = document.getElementById("content");
+
+function setTab(tab) {
+  currentTab = tab;
+  for (const b of document.querySelectorAll(".tabs button")) b.classList.toggle("active", b.dataset.tab === tab);
+  render();
+}
+document.getElementById("tabs").addEventListener("click", e => {
+  if (e.target.dataset && e.target.dataset.tab) setTab(e.target.dataset.tab);
+});
+
+function render() {
+  renderCountdown();
+  if (currentTab === "today") renderToday();
+  else if (currentTab === "week") renderWeek();
+  else if (currentTab === "anki") renderAnki();
+  else if (currentTab === "running") renderRunning();
+  else if (currentTab === "mcat") renderMCAT();
+  else if (currentTab === "dashboard") renderDashboard();
+}
+
+function renderCountdown() {
+  const t = todayISO();
+  const cd = document.getElementById("countdown");
+  let html = "";
+  if (t < SUMMER_START) {
+    html += `<div class="cd-item"><div class="cd-num">${daysBetween(t, SUMMER_START)}</div><div class="cd-label">Days to Start</div></div>`;
+  } else if (t <= SUMMER_END) {
+    html += `<div class="cd-item"><div class="cd-num">${daysBetween(t, SUMMER_END)}</div><div class="cd-label">Days to Aug 2</div></div>`;
+  }
+  if (t < MARATHON_DATE) {
+    html += `<div class="cd-item"><div class="cd-num">${daysBetween(t, MARATHON_DATE)}</div><div class="cd-label">Days to Marathon</div></div>`;
+  }
+  cd.innerHTML = html;
+}
+
+// ----- TODAY -----
+function renderToday() {
+  const today = todayISO();
+  let viewDate = currentViewDate || today;
+  if (viewDate < SUMMER_START) viewDate = SUMMER_START;
+  if (viewDate > SUMMER_END) viewDate = SUMMER_END;
+
+  const info = getDayInfo(viewDate);
+  if (!info.week) {
+    content.innerHTML = `<div class="panel"><p class="empty">No schedule for ${formatDate(viewDate)}. Plan runs ${formatDate(SUMMER_START)} → ${formatDate(SUMMER_END)}.</p></div>`;
+    return;
+  }
+
+  const realTasks = info.tasks.filter(t => t.id !== "rest");
+  const doneCount = realTasks.filter(t => isChecked(viewDate, t.id)).length;
+  const pct = realTasks.length ? Math.round(doneCount / realTasks.length * 100) : 0;
+
+  // Override state for this day
+  const actOvr = (state.overrides[viewDate] || {}).activity;
+  const isEditOpen = currentEditDate === viewDate;
+  const hasOwn = hasOwnOverride(viewDate);
+  const inheritedFrom = inheritedForwardSleepFrom(viewDate);
+
+  // Task list — mark overridden workout tasks
+  const taskHtml = info.tasks.map(t => {
+    const overridden = actOvr && t.id === "run" && (actOvr.type === "skip" || actOvr.type === "rest");
+    const isDone = isChecked(viewDate, t.id);
+    const noteHtml = overridden
+      ? `<div class="task-override-note">↩ ${actOvr.type === "rest" ? "Rest day" : "Skipped"}${actOvr.note ? ` — ${escapeHtml(actOvr.note)}` : ""}</div>`
+      : "";
+    return `
+      <div class="task ${isDone ? "done" : ""} ${overridden ? "overridden" : ""}" data-task="${t.id}">
+        <div class="checkbox"></div>
+        <div><div class="task-label">${t.label}</div>${noteHtml}</div>
+      </div>`;
+  }).join("");
+
+  // Banners
+  const cutbackHtml = info.week.cutback
+    ? `<div class="cutback-banner">⚡ Cutback Week — mileage drops ~25% to absorb training load</div>` : "";
+  let actBanner = "";
+  if (actOvr) {
+    actBanner = actOvr.type === "rest"
+      ? `<div class="override-banner rest">Rest Day Override${actOvr.note ? ` — ${escapeHtml(actOvr.note)}` : ""}</div>`
+      : `<div class="override-banner skip">Run / Cross-train Skipped${actOvr.note ? ` — ${escapeHtml(actOvr.note)}` : ""}</div>`;
+  }
+
+  // Sleep — resolved with overrides
+  const sleepObj = resolvedSleepForDate(viewDate);
+  const sleepDisplay = formatSleepBlock(sleepObj);
+  const ownSleepOvr = state.overrides[viewDate] && state.overrides[viewDate].sleep;
+  const sleepTag = ownSleepOvr
+    ? `<span class="override-indicator" style="margin-left:8px;">✏ ${ownSleepOvr.scope === "day" ? "Tonight only" : "Forward"}</span>`
+    : inheritedFrom
+    ? `<span class="override-indicator" style="margin-left:8px; opacity:0.7;">↩ From ${shortDate(inheritedFrom)}</span>`
+    : "";
+
+  // Override indicator in header
+  const ovrTag = hasOwn
+    ? `<span class="override-indicator" style="margin-left:6px;">✏ Customized</span>` : "";
+
+  // Edit button style reflects open state
+  const editBtnStyle = isEditOpen
+    ? `background:var(--gold); border-color:var(--gold); color:#1a1200;`
+    : ``;
+
+  content.innerHTML = `
+    <div class="panel">
+      <div class="today-header">
+        <div>
+          <div class="today-date">${formatDate(viewDate)}</div>
+          <div class="today-day" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:4px;">
+            <span>${DOW_FULL[info.dayIdx]} · ${info.week.label} · ${info.week.total} mi target</span>
+            ${ovrTag}
+          </div>
+        </div>
+        <div class="row">
+          <button class="btn btn-ghost btn-sm" id="prev-day">← Prev</button>
+          <button class="btn btn-ghost btn-sm" id="today-btn">Today</button>
+          <button class="btn btn-ghost btn-sm" id="next-day">Next →</button>
+          <input type="date" id="date-jump" value="${viewDate}" min="${SUMMER_START}" max="${SUMMER_END}">
+          <div class="day-badge badge-${info.dow.toLowerCase()}">${info.dow}</div>
+          <button class="btn btn-sm btn-ghost" id="toggle-edit" style="${editBtnStyle}">✏ Edit Day</button>
+        </div>
+      </div>
+      ${cutbackHtml}${actBanner}
+      <div class="progress-pill" style="margin-bottom:14px;">
+        <span class="hint">Today's progress:</span>
+        <div class="mini-bar"><div class="mini-bar-fill" style="width:${pct}%"></div></div>
+        <strong>${doneCount}/${realTasks.length}</strong>
+        <span class="hint">(${pct}%)</span>
+      </div>
+      <div class="task-list" id="task-list">${taskHtml}</div>
+      <div style="margin-top:18px;">
+        <h3>Stretch Resources</h3>
+        <div class="resource-links">
+          <a href="https://www.youtube.com/watch?v=_4XL82i2Lko" target="_blank" rel="noopener" class="resource-btn">
+            <span class="resource-icon">▶</span> Pre-Run Mobility <span class="resource-dur">10 min</span>
+          </a>
+          <a href="https://www.youtube.com/watch?v=2-Cswfkzd50" target="_blank" rel="noopener" class="resource-btn">
+            <span class="resource-icon">▶</span> Post-Run Stretch <span class="resource-dur">10 min</span>
+          </a>
+          <a href="https://www.youtube.com/watch?v=FbmLx-PahO4" target="_blank" rel="noopener" class="resource-btn">
+            <span class="resource-icon">▶</span> Cool-Down / Yoga <span class="resource-dur">10 min</span>
+          </a>
+        </div>
+      </div>
+      <div style="margin-top:18px;">
+        <h3>Sleep Target</h3>
+        <div class="sleep-block" style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
+          <span>Lights out → wake · <strong>${sleepDisplay}</strong></span>${sleepTag}
+        </div>
+      </div>
+      <div style="margin-top:16px;">
+        <h3>Day Notes</h3>
+        <textarea class="notes" id="day-notes" placeholder="HR feel, energy, what worked, what didn't...">${escapeHtml(state.notes[viewDate] || "")}</textarea>
+      </div>
+    </div>
+    ${isEditOpen ? buildEditPanel(viewDate, info) : ""}
+    ${ankiCheckinPanelHTML(viewDate)}
+  `;
+
+  content.querySelector("#task-list").addEventListener("click", e => {
+    const t = e.target.closest(".task");
+    if (!t) return;
+    const id = t.dataset.task;
+    const newVal = !isChecked(viewDate, id);
+    setCheck(viewDate, id, newVal);
+    if (id === "run" && newVal) {
+      const task = info.tasks.find(x => x.id === "run");
+      if (task && task.miles && !state.runs[viewDate]) {
+        state.runs[viewDate] = { actual: task.miles, notes: "" };
+        saveState();
+      }
+    }
+    renderToday();
+  });
+
+  document.getElementById("prev-day").onclick   = () => { currentEditDate = null; currentViewDate = addDays(viewDate, -1); renderToday(); };
+  document.getElementById("next-day").onclick   = () => { currentEditDate = null; currentViewDate = addDays(viewDate, 1);  renderToday(); };
+  document.getElementById("today-btn").onclick  = () => { currentEditDate = null; currentViewDate = todayISO();            renderToday(); };
+  document.getElementById("date-jump").onchange = e => { currentEditDate = null; currentViewDate = e.target.value;         renderToday(); };
+  document.getElementById("toggle-edit").onclick = () => {
+    currentEditDate = (currentEditDate === viewDate) ? null : viewDate;
+    renderToday();
+  };
+
+  const noteEl = document.getElementById("day-notes");
+  noteEl.addEventListener("input", () => {
+    const v = noteEl.value;
+    if (v) state.notes[viewDate] = v; else delete state.notes[viewDate];
+    saveState();
+  });
+
+  if (isEditOpen) wireUpEditPanel(viewDate);
+  wireUpAnkiCheckin(viewDate, renderToday);
+}
+
+// ----- WEEK -----
+function renderWeek() {
+  const today = todayISO();
+  let wkIdx = currentWeekIdx;
+  if (wkIdx === null) {
+    const w = findWeek(today);
+    wkIdx = w ? WEEKS.indexOf(w) : 0;
+  }
+  const week = WEEKS[wkIdx];
+
+  const dayCards = [];
+  for (let i = 0; i < 7; i++) {
+    const date = addDays(week.start, i);
+    const info = getDayInfo(date);
+    const isToday = date === today;
+    const dow = info.dow;
+    const cutbackClass = week.cutback ? " cutback" : "";
+    const tasksHtml = info.tasks.map(t => `
+      <div class="mini-task ${isChecked(date, t.id) ? "done" : ""}" data-date="${date}" data-task="${t.id}">
+        <div class="mini-check"></div>
+        <span>${t.label}</span>
+      </div>
+    `).join("");
+    dayCards.push(`
+      <div class="day-card${isToday ? " today" : ""}${cutbackClass}">
+        <div class="day-card-header">
+          <span>${dow} · ${shortDate(date)}${hasOwnOverride(date) ? `<span class="week-ovr-dot" title="Has override"></span>` : ""}</span>
+          <span class="day-badge badge-${dow.toLowerCase()}" style="font-size:9px; padding:2px 6px;">${dow}</span>
+        </div>
+        <div class="day-tasks">${tasksHtml}</div>
+      </div>
+    `);
+  }
+
+  const weekOpts = WEEKS.map((w, i) => `<option value="${i}" ${i===wkIdx ? "selected" : ""}>${w.label} · ${shortDate(w.start)}–${shortDate(addDays(w.start,6))} · ${w.total} mi${w.cutback ? " ⚡" : ""}</option>`).join("");
+
+  content.innerHTML = `
+    <div class="panel">
+      <div class="week-nav">
+        <div class="row">
+          <button class="btn btn-ghost btn-sm" id="prev-wk">← Prev Week</button>
+          <select id="week-select">${weekOpts}</select>
+          <button class="btn btn-ghost btn-sm" id="next-wk">Next Week →</button>
+          <button class="btn btn-ghost btn-sm" id="this-wk">This Week</button>
+        </div>
+        <div class="hint">${week.cutback ? "⚡ Cutback week — mileage drops ~25%" : ""}</div>
+      </div>
+      <div class="week-grid">${dayCards.join("")}</div>
+    </div>
+  `;
+
+  document.getElementById("week-select").onchange = e => { currentWeekIdx = parseInt(e.target.value); renderWeek(); };
+  document.getElementById("prev-wk").onclick = () => { currentWeekIdx = Math.max(0, wkIdx-1); renderWeek(); };
+  document.getElementById("next-wk").onclick = () => { currentWeekIdx = Math.min(WEEKS.length-1, wkIdx+1); renderWeek(); };
+  document.getElementById("this-wk").onclick = () => { currentWeekIdx = null; renderWeek(); };
+
+  for (const el of content.querySelectorAll(".mini-task")) {
+    el.addEventListener("click", () => {
+      const d = el.dataset.date;
+      const t = el.dataset.task;
+      setCheck(d, t, !isChecked(d, t));
+      el.classList.toggle("done");
+    });
+  }
+}
+
+// ----- ANKI -----
+function renderAnki() {
+  const today = todayISO();
+  let viewDate = currentViewDate || today;
+  if (viewDate < SUMMER_START) viewDate = SUMMER_START;
+  if (viewDate > SUMMER_END) viewDate = SUMMER_END;
+
+  // Aggregate totals
+  let totalActual = 0, totalBacklogYesterday = 0, totalTargetToday = 0, totalDoneToday = 0;
+  ANKI_DECKS.forEach(d => {
+    totalActual += ankiActualTotal(d.id);
+    totalBacklogYesterday += ankiBacklog(d.id, addDays(viewDate, -1));
+    totalTargetToday += ankiAdjustedTarget(d.id, viewDate);
+    totalDoneToday += ankiDailyEntry(viewDate, d.id);
+  });
+  const totalPct = Math.round(totalActual / ANKI_TOTAL * 100);
+  const isCard = isCardDay(viewDate);
+  const dow = DOW_LABELS[dayIdxFromISO(viewDate)];
+  const backlogNow = isCard
+    ? totalBacklogYesterday + ANKI_PER_DAY - totalDoneToday
+    : totalBacklogYesterday;
+  const todayPct = totalTargetToday ? Math.round(totalDoneToday / totalTargetToday * 100) : 0;
+  const backlogBorder = backlogNow > 0 ? "var(--danger)" : (backlogNow < 0 ? "var(--check)" : "var(--muted)");
+
+  // Per-deck cards (overall progress)
+  const decksHtml = ANKI_DECKS.map(deck => {
+    const done = ankiActualTotal(deck.id);
+    const pct = Math.min(100, Math.round(done / deck.total * 100));
+    const remaining = Math.max(0, deck.total - done);
+    const backlog = ankiBacklog(deck.id, addDays(viewDate, -1));
+    const target = ankiAdjustedTarget(deck.id, viewDate);
+    const extra = target - deck.perDay;
+    return `
+      <div class="deck" style="border-left-color:${deck.color}">
+        <div class="deck-name">${deck.name}</div>
+        <div class="deck-stats">${deck.perDay}/day · ${deck.total} total · est. ${deck.est}</div>
+        <div class="deck-progress">
+          <div class="deck-progress-bar" style="width:${pct}%; background:${deck.color};"></div>
+        </div>
+        <div class="deck-numbers">
+          <div><strong>${done}</strong> / ${deck.total} <span class="hint">(${pct}%)</span></div>
+          <div class="hint">${remaining > 0 ? `${remaining} left` : "✓ done"}</div>
+        </div>
+        <div class="deck-numbers" style="margin-top:10px; padding-top:10px; border-top:1px dashed var(--border);">
+          <div class="hint">Backlog: ${formatBacklog(backlog)}</div>
+          ${isCard ? `<div class="hint">Today: <strong style="color:${extra>0?'var(--gold)':'var(--text)'}">${target}</strong>${extra>0?` <span style="color:var(--gold)">(+${extra})</span>`:""}</div>` : `<div class="hint">${dow === "TUE" ? "no Anki" : "reviews only"}</div>`}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  content.innerHTML = `
+    <div class="panel">
+      <h2>Anki — Overall Status</h2>
+      <div class="dash-grid">
+        <div class="stat-card">
+          <div class="stat-label">Cards Done</div>
+          <div class="stat-value">${totalActual} <span class="frac">/ ${ANKI_TOTAL}</span></div>
+          <div class="stat-sub">${totalPct}% of deck total</div>
+        </div>
+        <div class="stat-card" style="border-left:4px solid ${backlogBorder};">
+          <div class="stat-label">Backlog (running total)</div>
+          <div class="stat-value">${backlogNow > 0 ? "+" : ""}${backlogNow}</div>
+          <div class="stat-sub">${backlogNow > 0 ? "cards behind plan" : (backlogNow < 0 ? `cards ahead of plan` : "exactly on plan")}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Today's Target</div>
+          <div class="stat-value">${isCard ? totalTargetToday : "—"}</div>
+          <div class="stat-sub">${isCard ? (totalTargetToday > ANKI_PER_DAY ? `Base ${ANKI_PER_DAY} + ${totalTargetToday-ANKI_PER_DAY} redistributed` : `Base ${ANKI_PER_DAY}`) : `${dow} · no new cards today`}</div>
+        </div>
+        <div class="stat-card" style="border-left:4px solid var(--accent);">
+          <div class="stat-label">Done Today</div>
+          <div class="stat-value">${totalDoneToday}${isCard ? ` <span class="frac">/ ${totalTargetToday}</span>` : ""}</div>
+          <div class="stat-sub">${isCard ? `${todayPct}% of today's target` : "—"}</div>
+        </div>
+      </div>
+      <div class="pillar-bar" style="margin-top: 14px;">
+        <div class="pillar-bar-fill" style="width:${totalPct}%; background:linear-gradient(90deg, #a64dff, #ff8c42, #4ecb71, #ffd93d, #4dd9ff, #ff4d6d, #5b8dff);"></div>
+      </div>
+      <div class="hint" style="margin-top: 10px;">${ANKI_PER_DAY} new/day on Mon · Wed · Thu · Fri · Sat &nbsp;|&nbsp; Sun = reviews only &nbsp;|&nbsp; Tue = no Anki &nbsp;|&nbsp; Missed cards redistribute across remaining card-days; week-end deficit carries to next week.</div>
+      <div class="row" style="margin-top:12px;">
+        <button class="btn btn-ghost btn-sm" id="anki-prev">← Prev Day</button>
+        <button class="btn btn-ghost btn-sm" id="anki-today">Today</button>
+        <button class="btn btn-ghost btn-sm" id="anki-next">Next Day →</button>
+        <input type="date" id="anki-date" value="${viewDate}" min="${SUMMER_START}" max="${SUMMER_END}">
+        <div class="hint" style="margin-left:auto;">Viewing ${formatDate(viewDate)}</div>
+      </div>
+    </div>
+    ${ankiCheckinPanelHTML(viewDate)}
+    <div class="panel">
+      <h2>By Deck — Overall Progress</h2>
+      <div class="anki-grid">${decksHtml}</div>
+    </div>
+  `;
+
+  document.getElementById("anki-prev").onclick = () => { currentViewDate = addDays(viewDate, -1); renderAnki(); };
+  document.getElementById("anki-next").onclick = () => { currentViewDate = addDays(viewDate, 1); renderAnki(); };
+  document.getElementById("anki-today").onclick = () => { currentViewDate = todayISO(); renderAnki(); };
+  document.getElementById("anki-date").onchange = e => { currentViewDate = e.target.value; renderAnki(); };
+
+  wireUpAnkiCheckin(viewDate, renderAnki);
+}
+
+// ----- RUNNING -----
+function renderRunning() {
+  let totalPlanned = 0, totalActual = 0;
+  const weekRows = WEEKS.map(w => {
+    let plan = 0, actual = 0;
+    for (let i = 0; i < 7; i++) {
+      const date = addDays(w.start, i);
+      if (typeof w.plan[i] === "number") plan += w.plan[i];
+      const r = state.runs[date];
+      if (r && typeof r.actual === "number") actual += r.actual;
+    }
+    totalPlanned += plan;
+    totalActual += actual;
+    const pct = plan ? Math.round(actual/plan*100) : 0;
+    return `
+      <tr class="${w.cutback ? "cutback" : ""}">
+        <td><strong>${w.label}</strong>${w.cutback ? " ⚡" : ""}</td>
+        <td>${shortDate(w.start)}–${shortDate(addDays(w.start,6))}</td>
+        <td>${plan.toFixed(1)} mi</td>
+        <td><strong>${actual.toFixed(1)} mi</strong></td>
+        <td><div class="bar"><div class="bar-fill ${pct>100?"over":""}" style="width:${Math.min(100,pct)}%"></div></div></td>
+        <td>${pct}%</td>
+      </tr>
+    `;
+  }).join("");
+
+  const today = todayISO();
+  let wkIdx = currentWeekIdx;
+  if (wkIdx === null) {
+    const w = findWeek(today);
+    wkIdx = w ? WEEKS.indexOf(w) : 0;
+  }
+  const week = WEEKS[wkIdx];
+
+  const dailyRows = [];
+  for (let i = 0; i < 7; i++) {
+    const date = addDays(week.start, i);
+    const dow = DOW_LABELS[i];
+    const plan = week.plan[i];
+    const r = state.runs[date] || {};
+    const isRun = typeof plan === "number";
+    const isCross = typeof plan === "string";
+    const planLabel = isRun ? `${plan} mi${dow==="SAT" ? " · long" : ""}` : (isCross ? plan : "rest");
+    const isTodayRow = date === today;
+    dailyRows.push(`
+      <tr class="${isTodayRow?"today-row":""}">
+        <td><strong>${dow}</strong> ${shortDate(date)}</td>
+        <td>${planLabel}</td>
+        <td>${isRun ? `<input type="number" step="0.1" data-rundate="${date}" value="${r.actual ?? ""}" placeholder="${plan}" style="width:70px;">` : (isCross ? `<input type="text" data-rundate-text="${date}" value="${escapeHtml(r.actualText||'')}" placeholder="${plan}" style="width:100px;">` : "—")}</td>
+        <td>${(isRun || isCross) ? `<input type="text" data-runnotes="${date}" value="${escapeHtml(r.notes||"")}" placeholder="HR / pace / how it felt" style="width:100%;">` : ""}</td>
+      </tr>
+    `);
+  }
+
+  const weekOpts = WEEKS.map((w, i) => `<option value="${i}" ${i===wkIdx ? "selected" : ""}>${w.label}</option>`).join("");
+
+  // Weekly bars chart
+  const maxMi = Math.max(...WEEKS.map(w => w.total));
+  const chartBars = WEEKS.map(w => {
+    let actual = 0;
+    for (let i = 0; i < 7; i++) {
+      const date = addDays(w.start, i);
+      const r = state.runs[date];
+      if (r && typeof r.actual === "number") actual += r.actual;
+    }
+    const planH = w.total / maxMi * 100;
+    const actH = actual / maxMi * 100;
+    return `
+      <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; min-width:0;">
+        <div style="position:relative; width:100%; height:120px; display:flex; align-items:flex-end; justify-content:center; gap:3px;">
+          <div title="planned ${w.total} mi" style="width:14px; height:${planH}%; background:var(--border-2); border-radius:2px 2px 0 0;"></div>
+          <div title="actual ${actual.toFixed(1)} mi" style="width:14px; height:${actH}%; background:${w.cutback?"var(--gold)":"var(--sat)"}; border-radius:2px 2px 0 0;"></div>
+        </div>
+        <div style="font-size:10px; color:var(--muted);">${w.label.replace("Prog ","").replace("Pre ","P-")}</div>
+      </div>
+    `;
+  }).join("");
+
+  content.innerHTML = `
+    <div class="panel">
+      <h2>Summer Total</h2>
+      <div class="dash-grid">
+        <div class="stat-card">
+          <div class="stat-label">Miles Logged</div>
+          <div class="stat-value">${totalActual.toFixed(1)} <span class="frac">/ ${totalPlanned.toFixed(0)}</span></div>
+          <div class="stat-sub">${totalPlanned?Math.round(totalActual/totalPlanned*100):0}% of plan</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Peak Week (Wk 10)</div>
+          <div class="stat-value">21 <span class="frac">mi</span></div>
+          <div class="stat-sub">Jul 20 – Jul 26</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Longest Long Run</div>
+          <div class="stat-value">7.0 <span class="frac">mi</span></div>
+          <div class="stat-sub">Sat Jul 25</div>
+        </div>
+      </div>
+      <div style="display:flex; align-items:flex-end; gap:8px; padding:16px 0 0; border-top:1px solid var(--border); margin-top:8px;">${chartBars}</div>
+      <div class="hint" style="margin-top:10px; text-align:center;">Gray = planned · Green = actual · Gold = cutback weeks</div>
+    </div>
+    <div class="panel">
+      <h2>Weekly Breakdown</h2>
+      <div class="table-scroll">
+      <table class="run-table">
+        <thead><tr><th>Week</th><th>Dates</th><th>Planned</th><th>Actual</th><th>Progress</th><th>%</th></tr></thead>
+        <tbody>${weekRows}</tbody>
+      </table>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Log Runs — <select id="run-week-select">${weekOpts}</select></h2>
+      <table class="run-table">
+        <thead><tr><th>Day</th><th>Planned</th><th>Actual</th><th>Notes</th></tr></thead>
+        <tbody>${dailyRows.join("")}</tbody>
+      </table>
+      <div class="hint" style="margin-top: 8px;">Cross-train notes go in the Notes field. Long runs (Sat) are the longest run of each week.</div>
+    </div>
+  `;
+
+  document.getElementById("run-week-select").onchange = e => { currentWeekIdx = parseInt(e.target.value); renderRunning(); };
+  for (const inp of content.querySelectorAll("input[data-rundate]")) {
+    inp.onchange = () => {
+      const d = inp.dataset.rundate;
+      if (!state.runs[d]) state.runs[d] = {};
+      const v = parseFloat(inp.value);
+      state.runs[d].actual = isNaN(v) ? null : v;
+      saveState();
+      renderRunning();
+    };
+  }
+  for (const inp of content.querySelectorAll("input[data-rundate-text]")) {
+    inp.onchange = () => {
+      const d = inp.dataset.rundateText;
+      if (!state.runs[d]) state.runs[d] = {};
+      state.runs[d].actualText = inp.value;
+      saveState();
+    };
+  }
+  for (const inp of content.querySelectorAll("input[data-runnotes]")) {
+    inp.onchange = () => {
+      const d = inp.dataset.runnotes;
+      if (!state.runs[d]) state.runs[d] = {};
+      state.runs[d].notes = inp.value;
+      saveState();
+    };
+  }
+}
+
+// ----- MCAT -----
+function renderMCAT() {
+  const exams = [...state.exams].sort((a,b) => a.date.localeCompare(b.date));
+
+  let chartHtml = "";
+  if (exams.length > 0) {
+    const minS = 472, maxS = 528;
+    chartHtml = `
+      <div class="exam-chart">
+        ${exams.map(e => {
+          const h = ((e.overall - minS) / (maxS - minS)) * 100;
+          return `<div class="exam-bar" style="height:${Math.max(8,h)}%">
+            <div class="exam-bar-value">${e.overall}</div>
+            <div class="exam-bar-label">${shortDate(e.date)}</div>
+          </div>`;
+        }).join("")}
+      </div>
+      <div class="hint" style="text-align:center; margin-top:24px;">Score scale 472–528 · gray line is target 515+</div>
+    `;
+  }
+
+  let listHtml;
+  if (exams.length === 0) {
+    listHtml = `<div class="empty">No exams logged yet. Add your first below.</div>`;
+  } else {
+    const items = exams.map((e, i) => {
+      const trend = i > 0 ? e.overall - exams[i-1].overall : 0;
+      const trendStr = i === 0 ? "" : (trend > 0 ? `+${trend}` : `${trend}`);
+      const trendColor = trend > 0 ? "var(--check)" : (trend < 0 ? "var(--danger)" : "var(--muted)");
+      return `
+        <div class="exam-item">
+          <div>${shortDate(e.date)}</div>
+          <div><strong style="font-size:16px;">${e.overall}</strong> <span style="color:${trendColor}; font-size:11px;">${trendStr}</span></div>
+          <div>${e.cp || "—"}</div>
+          <div>${e.cars || "—"}</div>
+          <div>${e.bb || "—"}</div>
+          <div>${e.ps || "—"}</div>
+          <div style="color:var(--muted); font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(e.notes)}">${escapeHtml(e.notes || "")}</div>
+          <button class="delete-btn" data-exam="${e.id}" title="Delete">✕</button>
+        </div>
+      `;
+    }).join("");
+    listHtml = `
+      <div class="exam-list">
+        <div class="exam-item header"><div>Date</div><div>Overall</div><div>C/P</div><div>CARS</div><div>B/B</div><div>P/S</div><div>Notes</div><div></div></div>
+        ${items}
+      </div>
+    `;
+  }
+
+  const count = exams.length;
+  const avg = count ? Math.round(exams.reduce((s,e) => s+e.overall, 0) / count) : 0;
+  const best = count ? Math.max(...exams.map(e => e.overall)) : 0;
+  const latest = count ? exams[exams.length-1].overall : 0;
+
+  content.innerHTML = `
+    <div class="panel">
+      <h2>MCAT Practice Exams</h2>
+      <div class="dash-grid">
+        <div class="stat-card"><div class="stat-label">Exams Taken</div><div class="stat-value">${count} <span class="frac">/ 11</span></div></div>
+        <div class="stat-card"><div class="stat-label">Latest</div><div class="stat-value">${latest || "—"}</div></div>
+        <div class="stat-card"><div class="stat-label">Best</div><div class="stat-value">${best || "—"}</div></div>
+        <div class="stat-card"><div class="stat-label">Average</div><div class="stat-value">${avg || "—"}</div></div>
+      </div>
+      ${chartHtml}
+    </div>
+    <div class="panel">
+      <h2>Add Exam</h2>
+      <div class="exam-form">
+        <div class="exam-row"><label>Date</label><input type="date" id="ex-date" min="${SUMMER_START}" max="${SUMMER_END}" value="${todayISO()}"></div>
+        <div class="exam-row"><label>Overall (472–528)</label><input type="number" id="ex-overall" min="472" max="528" placeholder="500"></div>
+        <div class="exam-row"><label>C/P (118–132)</label><input type="number" id="ex-cp" min="118" max="132" placeholder="125"></div>
+        <div class="exam-row"><label>CARS</label><input type="number" id="ex-cars" min="118" max="132" placeholder="125"></div>
+        <div class="exam-row"><label>B/B</label><input type="number" id="ex-bb" min="118" max="132" placeholder="125"></div>
+        <div class="exam-row"><label>P/S</label><input type="number" id="ex-ps" min="118" max="132" placeholder="125"></div>
+      </div>
+      <div class="exam-row" style="margin-bottom:14px;"><label>Notes</label><input type="text" id="ex-notes" placeholder="What to review, weak areas, timing issues..."></div>
+      <button class="btn" id="add-exam">+ Add Exam</button>
+    </div>
+    <div class="panel">
+      <h2>Exam History</h2>
+      ${listHtml}
+    </div>
+  `;
+
+  document.getElementById("add-exam").onclick = () => {
+    const exam = {
+      id: Date.now().toString(),
+      date: document.getElementById("ex-date").value,
+      overall: parseInt(document.getElementById("ex-overall").value) || 0,
+      cp: parseInt(document.getElementById("ex-cp").value) || 0,
+      cars: parseInt(document.getElementById("ex-cars").value) || 0,
+      bb: parseInt(document.getElementById("ex-bb").value) || 0,
+      ps: parseInt(document.getElementById("ex-ps").value) || 0,
+      notes: document.getElementById("ex-notes").value,
+    };
+    if (!exam.date || !exam.overall) { alert("Date and overall score are required."); return; }
+    state.exams.push(exam);
+    saveState();
+    renderMCAT();
+  };
+  for (const btn of content.querySelectorAll(".delete-btn")) {
+    btn.onclick = () => {
+      if (!confirm("Delete this exam?")) return;
+      state.exams = state.exams.filter(e => e.id !== btn.dataset.exam);
+      saveState();
+      renderMCAT();
+    };
+  }
+}
+
+// ----- DASHBOARD -----
+function renderDashboard() {
+  let daysDone = 0, daysTotal = 0;
+  let runMiActual = 0, runMiPlanned = 0;
+  let runDaysChecked = 0, runDaysTotal = 0;
+  let mcatChecked = 0, mcatTotal = 0;
+  let ankiChecked = 0, ankiTotal = 0;
+  let programChecked = 0, programTotal = 0;
+
+  for (const w of WEEKS) {
+    for (let i = 0; i < 7; i++) {
+      const date = addDays(w.start, i);
+      const info = getDayInfo(date);
+      daysTotal++;
+      const real = info.tasks.filter(t => t.id !== "rest");
+      const allDone = real.length > 0 && real.every(t => isChecked(date, t.id));
+      if (allDone) daysDone++;
+
+      if (typeof w.plan[i] === "number") {
+        runMiPlanned += w.plan[i];
+        runDaysTotal++;
+        if (isChecked(date, "run")) runDaysChecked++;
+      }
+      const r = state.runs[date];
+      if (r && r.actual) runMiActual += r.actual;
+
+      for (const t of real) {
+        if (t.id === "mcat" || t.id === "exam" || t.id === "examreview") { mcatTotal++; if (isChecked(date, t.id)) mcatChecked++; }
+        if (t.id === "anki") { ankiTotal++; if (isChecked(date, t.id)) ankiChecked++; }
+        if (t.id === "program") { programTotal++; if (isChecked(date, t.id)) programChecked++; }
+      }
+    }
+  }
+
+  const ankiTotalDone = ANKI_DECKS.reduce((s,d) => s + ankiActualTotal(d.id), 0);
+  const ankiCardPct = Math.round(ankiTotalDone / ANKI_TOTAL * 100);
+  const todayAnchor = (todayISO() < SUMMER_START) ? SUMMER_START : (todayISO() > SUMMER_END ? SUMMER_END : todayISO());
+  const ankiBacklogTotal = ANKI_DECKS.reduce((s,d) => s + ankiBacklog(d.id, addDays(todayAnchor, -1)), 0);
+  const runPct = runMiPlanned ? Math.round(runMiActual / runMiPlanned * 100) : 0;
+  const mcatExamCount = state.exams.length;
+  const dayPct = daysTotal ? Math.round(daysDone/daysTotal*100) : 0;
+
+  // Streak: count back from today (or yesterday if today not fully done)
+  let streak = 0;
+  let d = todayISO();
+  if (d > SUMMER_END) d = SUMMER_END;
+  while (d >= SUMMER_START) {
+    const info = getDayInfo(d);
+    const real = info.tasks.filter(t => t.id !== "rest");
+    if (real.length === 0) break;
+    if (real.every(t => isChecked(d, t.id))) streak++;
+    else break;
+    d = addDays(d, -1);
+  }
+
+  // MCAT pillar combines study checks + exams logged
+  const mcatStudyPct = mcatTotal ? mcatChecked/mcatTotal : 0;
+  const mcatExamPct = mcatExamCount / 11;
+  const mcatPct = Math.round((mcatStudyPct * 0.6 + mcatExamPct * 0.4) * 100);
+  // Anki pillar combines card progress + daily session check
+  const ankiSessionPct = ankiTotal ? ankiChecked/ankiTotal : 0;
+  const ankiPillarPct = Math.round((ankiCardPct/100 * 0.6 + ankiSessionPct * 0.4) * 100);
+  // Run pillar: miles + check-ins
+  const runSessionPct = runDaysTotal ? runDaysChecked/runDaysTotal : 0;
+  const runPillarPct = Math.round((runPct/100 * 0.6 + runSessionPct * 0.4) * 100);
+
+  content.innerHTML = `
+    <div class="dash-grid">
+      <div class="stat-card">
+        <div class="stat-label">Days Complete</div>
+        <div class="stat-value">${daysDone} <span class="frac">/ ${daysTotal}</span></div>
+        <div class="stat-sub">${dayPct}% of summer · ${77 - daysTotal} remaining if any</div>
+      </div>
+      <div class="stat-card" style="border-left:4px solid var(--check);">
+        <div class="stat-label">Current Streak</div>
+        <div class="stat-value">${streak} <span class="frac">days</span></div>
+        <div class="stat-sub">Consecutive full days</div>
+      </div>
+      <div class="stat-card" style="border-left:4px solid var(--sat);">
+        <div class="stat-label">Miles Logged</div>
+        <div class="stat-value">${runMiActual.toFixed(1)} <span class="frac">/ ${runMiPlanned.toFixed(0)}</span></div>
+        <div class="stat-sub">${runPct}% of planned mileage</div>
+      </div>
+      <div class="stat-card" style="border-left:4px solid #a64dff;">
+        <div class="stat-label">Anki Cards</div>
+        <div class="stat-value">${ankiTotalDone} <span class="frac">/ ${ANKI_TOTAL}</span></div>
+        <div class="stat-sub">${ankiCardPct}% complete</div>
+      </div>
+      <div class="stat-card" style="border-left:4px solid ${ankiBacklogTotal > 0 ? "var(--danger)" : (ankiBacklogTotal < 0 ? "var(--check)" : "var(--muted)")};">
+        <div class="stat-label">Anki Backlog</div>
+        <div class="stat-value">${ankiBacklogTotal > 0 ? "+" : ""}${ankiBacklogTotal}</div>
+        <div class="stat-sub">${ankiBacklogTotal > 0 ? "cards behind" : (ankiBacklogTotal < 0 ? "cards ahead" : "on plan")}</div>
+      </div>
+      <div class="stat-card" style="border-left:4px solid var(--accent);">
+        <div class="stat-label">Practice Exams</div>
+        <div class="stat-value">${mcatExamCount} <span class="frac">/ 11</span></div>
+        <div class="stat-sub">${Math.round(mcatExamCount/11*100)}% logged</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Three Pillars</h2>
+      <div class="pillar-bars">
+        <div class="pillar-mcat">
+          <div class="pillar-head"><span class="pillar-name">MCAT Prep</span><span class="pillar-pct">${mcatPct}%</span></div>
+          <div class="pillar-bar"><div class="pillar-bar-fill" style="width:${Math.min(100,mcatPct)}%;"></div></div>
+          <div class="hint" style="margin-top:4px;">${mcatChecked}/${mcatTotal} study sessions · ${mcatExamCount}/11 practice exams</div>
+        </div>
+        <div class="pillar-run">
+          <div class="pillar-head"><span class="pillar-name">Marathon Training</span><span class="pillar-pct">${runPillarPct}%</span></div>
+          <div class="pillar-bar"><div class="pillar-bar-fill" style="width:${Math.min(100,runPillarPct)}%;"></div></div>
+          <div class="hint" style="margin-top:4px;">${runMiActual.toFixed(1)}/${runMiPlanned.toFixed(0)} mi · ${runDaysChecked}/${runDaysTotal} runs done · Marathon ${daysBetween(todayISO(), MARATHON_DATE)}d away</div>
+        </div>
+        <div class="pillar-anki">
+          <div class="pillar-head"><span class="pillar-name">Anki Mastery</span><span class="pillar-pct">${ankiPillarPct}%</span></div>
+          <div class="pillar-bar"><div class="pillar-bar-fill" style="width:${Math.min(100,ankiPillarPct)}%;"></div></div>
+          <div class="hint" style="margin-top:4px;">${ankiTotalDone}/${ANKI_TOTAL} cards · ${ankiChecked}/${ankiTotal} daily sessions</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Other Stats</h2>
+      <div class="dash-grid">
+        <div class="stat-card">
+          <div class="stat-label">Program Days Done</div>
+          <div class="stat-value">${programChecked} <span class="frac">/ ${programTotal}</span></div>
+          <div class="stat-sub">Mon–Fri · Jun 8 – Jul 31</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Days Until Aug 2</div>
+          <div class="stat-value">${todayISO() <= SUMMER_END ? daysBetween(todayISO(), SUMMER_END) : 0}</div>
+          <div class="stat-sub">End of summer plan</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Days Until Marathon</div>
+          <div class="stat-value">${daysBetween(todayISO(), MARATHON_DATE)}</div>
+          <div class="stat-sub">Jan 18, 2027 · Baton Rouge</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Data Management</h2>
+      <div class="row">
+        <button class="btn btn-ghost" id="export-data">Export Backup</button>
+        <button class="btn btn-ghost" id="import-data">Import Backup</button>
+        <button class="btn btn-ghost" id="reset-data" style="color:var(--danger); border-color:var(--danger);">Reset All Progress</button>
+        <input type="file" id="import-file" accept=".json" style="display:none;">
+      </div>
+      <div class="hint" style="margin-top:10px;">All progress is saved in this browser's localStorage. Export periodically to back up your data — clearing browser data will erase it.</div>
+    </div>
+  `;
+
+  document.getElementById("export-data").onclick = () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `summer2026-backup-${todayISO()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+  document.getElementById("import-data").onclick = () => document.getElementById("import-file").click();
+  document.getElementById("import-file").onchange = e => {
+    const f = e.target.files[0]; if (!f) return;
+    const fr = new FileReader();
+    fr.onload = () => {
+      try {
+        const imported = JSON.parse(fr.result);
+        if (!confirm("Replace current progress with imported data?")) return;
+        state = { ...defaultState(), ...imported, anki: { ...defaultState().anki, ...(imported.anki||{}) } };
+        saveState();
+        render();
+      } catch (err) { alert("Invalid file: " + err.message); }
+    };
+    fr.readAsText(f);
+  };
+  document.getElementById("reset-data").onclick = () => {
+    if (!confirm("Erase ALL progress? This cannot be undone.")) return;
+    if (!confirm("Really sure? Last chance.")) return;
+    state = defaultState();
+    saveState();
+    render();
+  };
+}
+
+// Init
+render();
+</script>
+<script>
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
