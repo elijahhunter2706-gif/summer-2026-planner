@@ -962,8 +962,9 @@ textarea.notes {
   main { padding-bottom: max(80px, calc(64px + env(safe-area-inset-bottom))); }
   .scribble { display: none; }
   .pillar-pct { font-size: 20px; }
-  .today-header { flex-direction: column; align-items: flex-start; }
+  .today-header { flex-direction: column; align-items: flex-start; margin-bottom: 10px; }
   .progress-pill { width: 100%; }
+  #date-jump { display: none; }
   .mini-bar { flex: 1; width: auto; }
 }
 
@@ -1756,10 +1757,11 @@ function ankiCheckinPanelHTML(viewDate) {
     return { deck, target, actual, backlogBefore };
   });
 
-  if (!isCard) {
-    const msg = dow === "TUE"
-      ? "Tuesday — National Soren Day. No Anki today."
-      : (dow === "SUN" ? "Sunday — reviews only. No new cards today." : "Outside summer plan range.");
+  // Sunday and out-of-range: simple read-only message
+  if (!isCard && dow !== "TUE") {
+    const msg = dow === "SUN"
+      ? "Sunday — reviews only. No new cards today."
+      : "Outside summer plan range.";
     return `
       <div class="panel">
         <h2>Anki · ${dow} ${shortDate(viewDate)}</h2>
@@ -1768,30 +1770,38 @@ function ankiCheckinPanelHTML(viewDate) {
     `;
   }
 
+  // Tuesday: no target, but allow logging bonus cards
+  const isTuesday = dow === "TUE";
+
   const rowsHtml = rows.map(({ deck, target, actual, backlogBefore }) => {
-    const backlogAfter = backlogBefore + deck.perDay - actual;
+    const backlogAfter = isTuesday
+      ? backlogBefore - actual
+      : backlogBefore + deck.perDay - actual;
     const extra = target - deck.perDay;
     const extraTag = extra > 0 ? ` <span class="hint" style="color:var(--gold);">+${extra}</span>` : "";
     const targetStyle = extra > 0 ? 'style="color:var(--gold); font-weight:700;"' : "";
     return `
       <tr>
         <td><span style="display:inline-block; width:10px; height:10px; background:${deck.color}; border-radius:2px; margin-right:8px; vertical-align:middle;"></span><strong>${deck.name}</strong></td>
-        <td style="color:var(--muted);">${deck.perDay}</td>
-        <td ${targetStyle}>${target}${extraTag}</td>
-        <td><input type="number" min="0" max="999" data-checkin-deck="${deck.id}" data-checkin-date="${viewDate}" value="${actual || ""}" placeholder="${target}" style="width:72px;"></td>
+        <td style="color:var(--muted);">${isTuesday ? "—" : deck.perDay}</td>
+        <td ${targetStyle}>${isTuesday ? "—" : target + extraTag}</td>
+        <td><input type="number" min="0" max="999" data-checkin-deck="${deck.id}" data-checkin-date="${viewDate}" value="${actual || ""}" placeholder="0" style="width:72px;"></td>
         <td>${formatBacklog(backlogAfter)}</td>
       </tr>
     `;
   }).join("");
 
   const totalExtra = totalTarget - ANKI_PER_DAY;
-  const totalBacklogAfter = totalBacklogBefore + ANKI_PER_DAY - totalActual;
+  const totalBacklogAfter = isTuesday
+    ? totalBacklogBefore - totalActual
+    : totalBacklogBefore + ANKI_PER_DAY - totalActual;
   const totalExtraTag = totalExtra > 0 ? ` <span class="hint" style="color:var(--gold);">+${totalExtra}</span>` : "";
   const totalStyle = totalExtra > 0 ? 'style="color:var(--gold); font-weight:700;"' : "";
 
   return `
     <div class="panel">
-      <h2>Anki Check-in · ${dow} ${shortDate(viewDate)}</h2>
+      <h2>${isTuesday ? `Anki Bonus Log · TUE ${shortDate(viewDate)}` : `Anki Check-in · ${dow} ${shortDate(viewDate)}`}</h2>
+      ${isTuesday ? `<div class="hint" style="margin-bottom:12px;">National Soren Day — no target. Anything you log is a bonus and counts toward your running backlog.</div>` : ""}
       <div class="table-scroll">
       <table class="run-table">
         <thead><tr><th>Deck</th><th>Base</th><th>Today's Target</th><th>Done</th><th>Backlog After</th></tr></thead>
@@ -1808,9 +1818,9 @@ function ankiCheckinPanelHTML(viewDate) {
       </table>
       </div>
       <div class="row" style="margin-top:10px;">
-        <button class="btn btn-sm" data-anki-action="fill-all" data-date="${viewDate}">Hit all targets</button>
+        ${isTuesday ? "" : `<button class="btn btn-sm" data-anki-action="fill-all" data-date="${viewDate}">Hit all targets</button>`}
         <button class="btn btn-sm btn-ghost" data-anki-action="clear" data-date="${viewDate}">Clear day</button>
-        <div class="hint" style="margin-left:auto;">Missed cards redistribute across remaining card-days this week (Mon · Wed · Thu · Fri · Sat).</div>
+        <div class="hint" style="margin-left:auto;">${isTuesday ? "Bonus cards count toward your backlog." : "Missed cards redistribute across remaining card-days this week (Mon · Wed · Thu · Fri · Sat)."}</div>
       </div>
     </div>
   `;
