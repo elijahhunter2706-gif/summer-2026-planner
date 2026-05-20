@@ -773,6 +773,35 @@ textarea.notes {
   .exam-item { grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; }
   .exam-item.header { display: none; }
 }
+.cars-chart { position: relative; }
+.cars-bar { background: var(--lavender); }
+.cars-bar:hover { background: var(--blush); }
+.cars-target { position: absolute; left: 0; right: 0; bottom: 81px; border-top: 2px dashed var(--border-2); pointer-events: none; }
+.cars-item {
+  padding: 12px 18px;
+  background: var(--paper-2);
+  border-radius: var(--r);
+  display: grid;
+  grid-template-columns: 70px 55px 52px 70px 1fr 28px;
+  gap: 12px;
+  align-items: center;
+  font-size: 13px;
+  border: 1px solid var(--border);
+}
+.cars-item.header {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+  padding: 4px 18px;
+}
+@media (max-width: 800px) {
+  .cars-item { grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; }
+  .cars-item.header { display: none; }
+}
 
 .dash-grid {
   display: grid;
@@ -1147,6 +1176,7 @@ function defaultState() {
     ankiDaily: {},   // ankiDaily[date][deckId] = cards completed that day
     runs: {},        // runs[date] = { actual, notes }
     exams: [],
+    carsPassages: [],
     overrides: {},   // overrides[date] = { sleep?: {bedtime,wake,scope}, activity?: {type,note} }
   };
 }
@@ -1163,6 +1193,7 @@ function loadState() {
       ankiDaily: s.ankiDaily || {},
       runs: s.runs || {},
       exams: s.exams || [],
+      carsPassages: s.carsPassages || [],
       overrides: s.overrides || {},
     };
   } catch (e) { return defaultState(); }
@@ -1274,8 +1305,9 @@ async function pullFromGist() {
       anki:      { ...def.anki, ...(remote.anki || {}) },
       ankiDaily: remote.ankiDaily || {},
       runs:      remote.runs      || {},
-      exams:     remote.exams     || [],
-      overrides: remote.overrides || {},
+      exams:        remote.exams        || [],
+      carsPassages: remote.carsPassages || [],
+      overrides:    remote.overrides    || {},
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     syncCfg.status = "idle";
@@ -2435,7 +2467,9 @@ function renderRunning() {
 // ----- MCAT -----
 function renderMCAT() {
   const exams = [...state.exams].sort((a,b) => a.date.localeCompare(b.date));
+  const passages = [...(state.carsPassages || [])].sort((a,b) => a.date.localeCompare(b.date));
 
+  // --- Exam chart ---
   let chartHtml = "";
   if (exams.length > 0) {
     const minS = 472, maxS = 528;
@@ -2453,6 +2487,7 @@ function renderMCAT() {
     `;
   }
 
+  // --- Exam list ---
   let listHtml;
   if (exams.length === 0) {
     listHtml = `<div class="empty">No exams logged yet. Add your first below.</div>`;
@@ -2487,6 +2522,62 @@ function renderMCAT() {
   const best = count ? Math.max(...exams.map(e => e.overall)) : 0;
   const latest = count ? exams[exams.length-1].overall : 0;
 
+  // --- CARS passage chart ---
+  let carsChartHtml = "";
+  if (passages.length > 0) {
+    carsChartHtml = `
+      <div class="exam-chart cars-chart">
+        <div class="cars-target"></div>
+        ${passages.map(p => {
+          const pct = Math.round(p.correct / p.total * 100);
+          return `<div class="exam-bar cars-bar" style="height:${Math.max(8, pct)}%" title="${p.correct}/${p.total} correct">
+            <div class="exam-bar-value">${pct}%</div>
+            <div class="exam-bar-label">${shortDate(p.date)}</div>
+          </div>`;
+        }).join("")}
+      </div>
+      <div class="hint" style="text-align:center; margin-top:24px;">% correct per passage · dashed line = 70% target</div>
+    `;
+  }
+
+  // --- CARS passage list ---
+  let carsListHtml;
+  if (passages.length === 0) {
+    carsListHtml = `<div class="empty">No passages logged yet. Add your first below.</div>`;
+  } else {
+    const carsItems = passages.map((p, i) => {
+      const pct = Math.round(p.correct / p.total * 100);
+      const prevPct = i > 0 ? Math.round(passages[i-1].correct / passages[i-1].total * 100) : null;
+      const trend = prevPct !== null ? pct - prevPct : 0;
+      const trendStr = i === 0 ? "" : (trend > 0 ? `+${trend}` : `${trend}`);
+      const trendColor = trend > 0 ? "var(--check)" : (trend < 0 ? "var(--danger)" : "var(--muted)");
+      return `
+        <div class="cars-item">
+          <div>${shortDate(p.date)}</div>
+          <div>${p.correct}/${p.total}</div>
+          <div><strong>${pct}%</strong> <span style="color:${trendColor}; font-size:11px;">${trendStr}</span></div>
+          <div style="color:var(--muted);">${p.difficulty || "—"}</div>
+          <div style="color:var(--muted); font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(p.notes)}">${escapeHtml(p.notes || "")}</div>
+          <button class="delete-btn" data-cars="${p.id}" title="Delete">✕</button>
+        </div>
+      `;
+    }).join("");
+    carsListHtml = `
+      <div class="exam-list">
+        <div class="cars-item header"><div>Date</div><div>Score</div><div>%</div><div>Difficulty</div><div>Notes</div><div></div></div>
+        ${carsItems}
+      </div>
+    `;
+  }
+
+  // --- CARS stats ---
+  const carsCount = passages.length;
+  const carsPcts = passages.map(p => Math.round(p.correct / p.total * 100));
+  const carsAvg = carsCount ? Math.round(carsPcts.reduce((s,v) => s+v, 0) / carsCount) : 0;
+  const carsBest = carsCount ? Math.max(...carsPcts) : 0;
+  const carsRecent5 = carsPcts.slice(-5);
+  const carsRecentAvg = carsRecent5.length ? Math.round(carsRecent5.reduce((s,v) => s+v, 0) / carsRecent5.length) : 0;
+
   content.innerHTML = `
     <div class="panel">
       <h2>MCAT Practice Exams</h2>
@@ -2515,6 +2606,31 @@ function renderMCAT() {
       <h2>Exam History</h2>
       ${listHtml}
     </div>
+    <div class="panel">
+      <h2>CARS Passage Tracker</h2>
+      <div class="dash-grid">
+        <div class="stat-card theme-mcat"><div class="stat-label">Passages Logged</div><div class="stat-value">${carsCount || "—"}</div></div>
+        <div class="stat-card theme-mcat"><div class="stat-label">Average</div><div class="stat-value">${carsAvg ? carsAvg + "%" : "—"}</div></div>
+        <div class="stat-card theme-streak"><div class="stat-label">Best</div><div class="stat-value">${carsBest ? carsBest + "%" : "—"}</div></div>
+        <div class="stat-card theme-cool"><div class="stat-label">Last 5 Avg</div><div class="stat-value">${carsRecentAvg ? carsRecentAvg + "%" : "—"}</div></div>
+      </div>
+      ${carsChartHtml}
+    </div>
+    <div class="panel">
+      <h2>Log CARS Passage</h2>
+      <div class="exam-form">
+        <div class="exam-row"><label>Date</label><input type="date" id="cp-date" min="${SUMMER_START}" max="${SUMMER_END}" value="${todayISO()}"></div>
+        <div class="exam-row"><label>Correct Answers</label><input type="number" id="cp-correct" min="0" max="10" placeholder="5"></div>
+        <div class="exam-row"><label>Total Questions</label><input type="number" id="cp-total" min="1" max="10" value="7"></div>
+        <div class="exam-row"><label>Difficulty</label><select id="cp-diff" style="padding:10px 12px; border-radius:var(--r); border:1px solid var(--border); background:var(--paper); font-size:14px; color:var(--ink);"><option value="">—</option><option>Easy</option><option>Medium</option><option>Hard</option></select></div>
+      </div>
+      <div class="exam-row" style="margin-bottom:14px;"><label>Notes</label><input type="text" id="cp-notes" placeholder="Topic, source, what you missed..."></div>
+      <button class="btn" id="add-cars">+ Log Passage</button>
+    </div>
+    <div class="panel">
+      <h2>Passage History</h2>
+      ${carsListHtml}
+    </div>
   `;
 
   document.getElementById("add-exam").onclick = () => {
@@ -2533,10 +2649,36 @@ function renderMCAT() {
     saveState();
     renderMCAT();
   };
-  for (const btn of content.querySelectorAll(".delete-btn")) {
+  document.getElementById("add-cars").onclick = () => {
+    const correctVal = document.getElementById("cp-correct").value;
+    if (!document.getElementById("cp-date").value || correctVal === "") {
+      alert("Date and correct answers are required."); return;
+    }
+    const passage = {
+      id: Date.now().toString(),
+      date: document.getElementById("cp-date").value,
+      correct: parseInt(correctVal),
+      total: parseInt(document.getElementById("cp-total").value) || 7,
+      difficulty: document.getElementById("cp-diff").value,
+      notes: document.getElementById("cp-notes").value,
+    };
+    if (!state.carsPassages) state.carsPassages = [];
+    state.carsPassages.push(passage);
+    saveState();
+    renderMCAT();
+  };
+  for (const btn of content.querySelectorAll(".delete-btn[data-exam]")) {
     btn.onclick = () => {
       if (!confirm("Delete this exam?")) return;
       state.exams = state.exams.filter(e => e.id !== btn.dataset.exam);
+      saveState();
+      renderMCAT();
+    };
+  }
+  for (const btn of content.querySelectorAll(".delete-btn[data-cars]")) {
+    btn.onclick = () => {
+      if (!confirm("Delete this passage?")) return;
+      state.carsPassages = state.carsPassages.filter(p => p.id !== btn.dataset.cars);
       saveState();
       renderMCAT();
     };
