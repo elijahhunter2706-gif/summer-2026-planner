@@ -2834,6 +2834,37 @@ function renderCountdown() {
 }
 
 // ============================================================
+// HAPTIC FEEDBACK
+// iOS Safari never implemented navigator.vibrate(), so we use a
+// hidden <input type="checkbox"> — programmatically clicking it
+// fires the Taptic Engine's selection feedback via UIKit.
+// Android/Chrome gets the Vibration API instead.
+// style: 'light' | 'medium' (default) | 'heavy'
+// ============================================================
+function triggerHaptic(style) {
+  // Android / Chrome
+  if (navigator.vibrate) {
+    try { navigator.vibrate(style === 'light' ? 5 : style === 'heavy' ? 28 : 12); } catch (_) {}
+    return;
+  }
+  // iOS Safari — checkbox state-change → Taptic Engine selection haptic
+  try {
+    if (!window._hapticEl) {
+      const el = document.createElement('input');
+      el.type = 'checkbox';
+      el.style.cssText = 'position:fixed;opacity:0;pointer-events:none;width:1px;height:1px;top:-200px;left:-200px;';
+      document.body.appendChild(el);
+      window._hapticEl = el;
+    }
+    window._hapticEl.click(); // toggle → haptic fires
+    if (style === 'heavy') {
+      // Double-tap feel: fire a second click ~40 ms later
+      setTimeout(() => { try { window._hapticEl.click(); } catch (_) {} }, 40);
+    }
+  } catch (_) {}
+}
+
+// ============================================================
 // TASK COMPLETION MODE (tap vs swipe, per device class)
 // ============================================================
 function isTouchDevice() {
@@ -2909,7 +2940,7 @@ function attachSwipeToComplete(row, onComplete) {
       row.classList.add("swipe-complete");
       row._swipedJustNow = true;
       task.style.setProperty("--swipe-x", (rowWidth + 80) + "px");
-      if (navigator.vibrate) { try { navigator.vibrate(18); } catch (_) {} }
+      triggerHaptic('heavy'); // swipe-complete = strong confirmation
       setTimeout(() => { try { onComplete(); } catch (_) {} }, 240);
     } else {
       setX(0);
@@ -3072,6 +3103,7 @@ function renderToday() {
     if (getCompletionMode() === "swipe" && !t.classList.contains("done") && !e.target.closest(".checkbox")) return;
     const id = t.dataset.task;
     const newVal = !isChecked(viewDate, id);
+    triggerHaptic(newVal ? 'medium' : 'light'); // complete = medium, uncheck = light
     setCheck(viewDate, id, newVal);
     if (id === "run" && newVal) {
       const task = info.tasks.find(x => x.id === "run");
@@ -3440,6 +3472,7 @@ function renderRunning() {
       if (!state.runs[d]) state.runs[d] = {};
       const v = parseFloat(inp.value);
       state.runs[d].actual = isNaN(v) ? null : v;
+      if (!isNaN(v) && v > 0) triggerHaptic('medium'); // logged a run
       saveState();
       renderRunning();
     };
@@ -3644,6 +3677,7 @@ function renderMCAT() {
     };
     if (!exam.date || !exam.overall) { alert("Date and overall score are required."); return; }
     state.exams.push(exam);
+    triggerHaptic('heavy'); // logging a full exam = big moment
     saveState();
     renderMCAT();
   };
@@ -3662,6 +3696,7 @@ function renderMCAT() {
     };
     if (!state.carsPassages) state.carsPassages = [];
     state.carsPassages.push(passage);
+    triggerHaptic('medium'); // logging a CARS passage
     saveState();
     renderMCAT();
   };
