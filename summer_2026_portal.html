@@ -209,6 +209,7 @@
 :root[data-tab="running"]   { --tab-accent: #4F9F4D; --tab-accent-soft: var(--mint-soft); }
 :root[data-tab="mcat"]      { --tab-accent: #D4683F; --tab-accent-soft: var(--peach-soft); }
 :root[data-tab="dashboard"] { --tab-accent: #4A5BAE; --tab-accent-soft: var(--sky-soft); }
+:root[data-tab="settings"]  { --tab-accent: #7A715F; --tab-accent-soft: var(--paper-2); }
 
 :root[data-theme="dark"][data-tab="today"]     { --tab-accent: #E0A93C; }
 :root[data-theme="dark"][data-tab="week"]      { --tab-accent: #A293DC; }
@@ -216,6 +217,7 @@
 :root[data-theme="dark"][data-tab="running"]   { --tab-accent: #6FB36A; }
 :root[data-theme="dark"][data-tab="mcat"]      { --tab-accent: #E68258; }
 :root[data-theme="dark"][data-tab="dashboard"] { --tab-accent: #8E9CDC; }
+:root[data-theme="dark"][data-tab="settings"]  { --tab-accent: #B5AC97; }
 
 .title-dynamic { transition: color 0.4s cubic-bezier(0.16,1,0.3,1); min-width: 1ch; }
 .scribble      { color: var(--tab-accent); transition: color 0.4s cubic-bezier(0.16,1,0.3,1); }
@@ -302,12 +304,15 @@ h1 .title-dynamic { font-style: italic; color: var(--tab-accent); }
   width: clamp(36px, 5vw, 56px);
   height: clamp(24px, 3.4vw, 36px);
   pointer-events: none;
-  color: var(--coral);
+  color: var(--tab-accent);
   vertical-align: 0.35em;
 }
 .scribble path {
   stroke-dasharray: 120;
   stroke-dashoffset: 0;
+}
+.scribble.replay path {
+  animation: scribbleDraw 0.7s cubic-bezier(0.65, 0, 0.35, 1) both;
 }
 
 /* ---------- Launch animation ---------- */
@@ -578,7 +583,7 @@ nav.tabs {
   display: flex;
   gap: 4px;
   margin: 8px auto 0;
-  max-width: 1232px;
+  max-width: 1216px;
   padding: 6px;
   background: var(--paper-3);
   border-radius: 999px;
@@ -588,8 +593,11 @@ nav.tabs {
   scrollbar-width: none;
   position: relative;
   z-index: 2;
-  margin-left: clamp(8px, 2.5vw, 24px);
-  margin-right: clamp(8px, 2.5vw, 24px);
+  margin-left: clamp(16px, 4vw, 32px);
+  margin-right: clamp(16px, 4vw, 32px);
+}
+@media (min-width: 1280px) {
+  nav.tabs { margin-left: auto; margin-right: auto; }
 }
 nav.tabs::-webkit-scrollbar { display: none; }
 .tabs button {
@@ -620,9 +628,13 @@ nav.tabs::-webkit-scrollbar { display: none; }
 .tabs button[data-tab="running"].active   { background: var(--mint-soft); }
 .tabs button[data-tab="mcat"].active      { background: var(--peach-soft); }
 .tabs button[data-tab="dashboard"].active { background: var(--sky-soft); }
+.tabs button[data-tab="settings"]         { padding-left: 13px; padding-right: 13px; color: var(--muted); }
+.tabs button[data-tab="settings"]:hover   { color: var(--ink); }
+.tabs button[data-tab="settings"].active  { background: var(--paper-2); color: var(--ink); }
+.tabs button[data-tab="settings"] svg     { pointer-events: none; }
 
 main {
-  padding: 20px clamp(12px, 2.5vw, 24px) 64px;
+  padding: 20px clamp(16px, 4vw, 32px) 64px;
   max-width: 1280px;
   margin: 0 auto;
   position: relative;
@@ -736,6 +748,73 @@ main {
 }
 
 .task-list { display: flex; flex-direction: column; gap: 10px; }
+
+/* ---------- Task row + swipe-to-complete ---------- */
+.task-row {
+  position: relative;
+  border-radius: var(--r);
+  overflow: hidden;
+  isolation: isolate;
+}
+.task-swipe-bg {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r);
+  background: linear-gradient(90deg, var(--success) 0%, color-mix(in srgb, var(--success) 78%, white 22%) 100%);
+  color: #FFFCF3;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 26px;
+  font-weight: 700;
+  font-size: 14.5px;
+  letter-spacing: 0.2px;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+.task-row.swipe-enabled .task-swipe-bg { opacity: 0.55; }
+.task-row.swiping  .task-swipe-bg { opacity: 1; }
+.task-row.swipe-ready .task-swipe-bg { background: linear-gradient(90deg, var(--success), #7BC476); }
+.task-swipe-icon {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.28);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 17px; font-weight: 800;
+  flex-shrink: 0;
+}
+.task-swipe-label { opacity: 0.95; }
+.task-row .task {
+  position: relative;
+  z-index: 1;
+  transform: translate3d(var(--swipe-x, 0px), 0, 0);
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  touch-action: pan-y;
+}
+.task-row .task:hover  { transform: translate3d(var(--swipe-x, 0px), -3px, 0) rotate(-0.4deg); }
+.task-row .task:active { transform: translate3d(var(--swipe-x, 0px), 0, 0) scale(0.995); }
+.task-row.swiping .task,
+.task-row.swiping .task:hover,
+.task-row.swiping .task:active { transform: translate3d(var(--swipe-x, 0px), 0, 0); }
+.task-row.swiping .task { transition: none; }
+.task-row.swipe-complete .task { transition: transform 0.34s cubic-bezier(0.34, 1.36, 0.64, 1); }
+.task-row.swipe-enabled .task::after {
+  /* hide the right-side dot — the swipe affordance takes its place */
+  display: none;
+}
+.task-row.swipe-enabled .task .task-content { padding-right: 18px; }
+.task-row.swipe-hint .task {
+  animation: swipeHint 1.6s cubic-bezier(0.4, 0, 0.6, 1) 1;
+}
+@keyframes swipeHint {
+  0%   { transform: translate3d(0, 0, 0); }
+  18%  { transform: translate3d(28px, 0, 0); }
+  36%  { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
 .task {
   display: flex;
   align-items: center;
@@ -1354,6 +1433,116 @@ textarea.notes {
 .act-btn.active-skip   { background: var(--blush); color: var(--ink); }
 .act-btn.active-rest   { background: var(--sky); color: var(--ink); }
 
+/* ---------- Settings page ---------- */
+.settings-intro {
+  color: var(--ink-2);
+  font-size: 14px;
+  margin-bottom: 8px;
+  max-width: 560px;
+}
+.settings-section {
+  padding: 20px 0;
+  border-top: 1px dashed var(--border-2);
+}
+.settings-section:first-of-type { border-top: none; padding-top: 6px; }
+.settings-section h3 {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.6px;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+.settings-row {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  flex-wrap: wrap;
+}
+.settings-row + .settings-row { border-top: 1px solid var(--border); }
+.settings-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1 1 220px;
+}
+.settings-label strong { font-size: 14.5px; font-weight: 700; color: var(--ink); display: flex; align-items: center; gap: 10px; }
+.this-device-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: var(--tab-accent-soft);
+  color: var(--tab-accent);
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+.settings-hint { color: var(--ink-2); font-size: 12.5px; font-weight: 500; }
+.seg {
+  display: inline-flex;
+  padding: 4px;
+  background: var(--paper-2);
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  gap: 4px;
+  flex-shrink: 0;
+}
+.seg-btn {
+  background: transparent;
+  border: none;
+  padding: 9px 16px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, transform 0.15s;
+  white-space: nowrap;
+}
+.seg-btn:hover { color: var(--ink); }
+.seg-btn.active {
+  background: var(--tab-accent);
+  color: #FFFCF3;
+  box-shadow: var(--shadow-xs);
+}
+:root[data-theme="dark"] .seg-btn.active { color: #161310; }
+.settings-preview {
+  margin-top: 18px;
+  padding: 18px;
+  background: var(--paper-2);
+  border-radius: var(--r);
+  border: 1px dashed var(--border-2);
+}
+.settings-preview-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.6px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.settings-preview-sub { color: var(--ink-2); font-size: 13px; margin-bottom: 14px; }
+.demo-arrow {
+  display: inline-block;
+  animation: demoNudge 1.4s cubic-bezier(0.4,0,0.6,1) infinite;
+}
+@keyframes demoNudge {
+  0%, 100% { transform: translateX(0); opacity: 0.6; }
+  50%      { transform: translateX(6px); opacity: 1; }
+}
+@media (max-width: 600px) {
+  .settings-row { gap: 12px; }
+  .seg-btn { padding: 9px 12px; font-size: 12px; }
+  .settings-label { flex: 1 1 100%; }
+}
+
 .empty { text-align: center; padding: 40px 20px; color: var(--muted); font-style: italic; }
 .delete-btn {
   background: transparent;
@@ -1479,6 +1668,9 @@ textarea.notes {
   <button data-tab="running">Running</button>
   <button data-tab="mcat">MCAT Exams</button>
   <button data-tab="dashboard">Dashboard</button>
+  <button data-tab="settings" aria-label="Settings" title="Settings">
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+  </button>
 </nav>
 <main id="content"></main>
 
@@ -1617,6 +1809,9 @@ function defaultState() {
     exams: [],
     carsPassages: [],
     overrides: {},   // overrides[date] = { sleep?: {bedtime,wake,scope}, activity?: {type,note} }
+    settings: {      // user preferences
+      completionMode: { mobile: "swipe", desktop: "tap" }, // "tap" | "swipe"
+    },
     savedAt: 0,      // ms timestamp of last local save — used to guard against stale Gist pulls
   };
 }
@@ -1635,6 +1830,11 @@ function loadState() {
       exams: s.exams || [],
       carsPassages: s.carsPassages || [],
       overrides: s.overrides || {},
+      settings: {
+        ...def.settings,
+        ...(s.settings || {}),
+        completionMode: { ...def.settings.completionMode, ...((s.settings && s.settings.completionMode) || {}) },
+      },
       savedAt: s.savedAt || 0,
     };
   } catch (e) { return defaultState(); }
@@ -2485,7 +2685,32 @@ const TAB_TITLES = {
   running:   "Running.",
   mcat:      "MCAT Exams.",
   dashboard: "Plan.",  // special — dashboard reads as "Master Plan."
+  settings:  "Setup.",
 };
+// Re-play the scribble's stroke-draw animation. Uses WAAPI so it can be
+// restarted reliably every tab switch (CSS class toggling + reflow tricks
+// are flaky for SVG path animations across browsers).
+let _scribbleAnim = null;
+function replayScribble() {
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const path = document.querySelector("#hero-title .scribble path");
+  if (!path) return;
+  try {
+    if (_scribbleAnim) _scribbleAnim.cancel();
+    _scribbleAnim = path.animate(
+      [
+        { strokeDashoffset: 120 },
+        { strokeDashoffset: 0 }
+      ],
+      {
+        duration: 700,
+        easing: "cubic-bezier(0.65, 0, 0.35, 1)",
+        fill: "both"
+      }
+    );
+  } catch (e) { /* WAAPI unsupported — leave the static stroke in place */ }
+}
+
 function updateHeroTitle(animate) {
   const el = document.querySelector("#hero-title .title-dynamic");
   if (!el) return;
@@ -2504,6 +2729,8 @@ function updateHeroTitle(animate) {
     el.classList.remove("swap-out");
     void el.offsetWidth;
     el.classList.add("swap-in");
+    // Re-play the scribble draw in sync with the new title arriving
+    replayScribble();
   }, 200);
 }
 
@@ -2542,7 +2769,8 @@ function setTab(tab) {
   render();
 }
 document.getElementById("tabs").addEventListener("click", e => {
-  if (e.target.dataset && e.target.dataset.tab) setTab(e.target.dataset.tab);
+  const btn = e.target.closest("button[data-tab]");
+  if (btn) setTab(btn.dataset.tab);
 });
 
 function render() {
@@ -2553,6 +2781,7 @@ function render() {
   else if (currentTab === "running") renderRunning();
   else if (currentTab === "mcat") renderMCAT();
   else if (currentTab === "dashboard") renderDashboard();
+  else if (currentTab === "settings") renderSettings();
   if (_replayTabAnim) {
     _replayTabAnim = false;
     runTabEntryAnimation();
@@ -2599,6 +2828,111 @@ function renderCountdown() {
   cd.innerHTML = html;
 }
 
+// ============================================================
+// TASK COMPLETION MODE (tap vs swipe, per device class)
+// ============================================================
+function isTouchDevice() {
+  return !!(window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches);
+}
+function getCompletionMode() {
+  const pref = (state.settings && state.settings.completionMode) || { mobile: "swipe", desktop: "tap" };
+  return isTouchDevice() ? pref.mobile : pref.desktop;
+}
+
+// Attach a "swipe right to complete" gesture, à la iPhone slide-to-answer.
+// `row` is a .task-row that contains a .task (the foreground element that
+// translates) and a .task-swipe-bg (the green track underneath).
+// `onComplete` fires once the user releases past the threshold.
+function attachSwipeToComplete(row, onComplete) {
+  const task = row.querySelector(".task");
+  if (!task) return;
+  let startX = 0, currentX = 0, active = false, rowWidth = 0;
+  let startY = 0, gestureLocked = null; // null | "x" | "y"
+  let startedAt = 0;
+  const THRESHOLD_FRAC = 0.55; // swipe past 55% of the row to trigger
+  const QUICK_FLICK_MS = 280;
+  const QUICK_FLICK_PX = 90;
+
+  const setX = (px) => {
+    task.style.setProperty("--swipe-x", px + "px");
+    const pct = Math.max(0, Math.min(1, px / rowWidth));
+    row.classList.toggle("swipe-ready", pct >= THRESHOLD_FRAC);
+  };
+
+  const reset = () => {
+    row.classList.remove("swiping", "swipe-ready");
+    setX(0);
+  };
+
+  const onDown = (e) => {
+    // Only primary pointer; ignore right-clicks
+    if (e.button && e.button !== 0) return;
+    active = true;
+    gestureLocked = null;
+    startX = e.clientX;
+    startY = e.clientY;
+    currentX = 0;
+    startedAt = performance.now();
+    rowWidth = row.getBoundingClientRect().width;
+    try { task.setPointerCapture(e.pointerId); } catch (_) {}
+  };
+  const onMove = (e) => {
+    if (!active) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+
+    // Lock to the dominant axis on first meaningful movement, so vertical
+    // scrolling stays smooth and horizontal intent is captured.
+    if (gestureLocked === null) {
+      if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+      gestureLocked = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+      if (gestureLocked === "x") {
+        row.classList.add("swiping");
+      }
+    }
+    if (gestureLocked !== "x") return;
+
+    // Allow only rightward motion; cap a bit past the row edge for elastic feel
+    currentX = Math.max(0, Math.min(dx, rowWidth + 40));
+    // Slight elastic resistance once past the row's right edge
+    if (currentX > rowWidth) {
+      currentX = rowWidth + (currentX - rowWidth) * 0.35;
+    }
+    setX(currentX);
+  };
+  const onUp = (e) => {
+    if (!active) return;
+    active = false;
+    try { task.releasePointerCapture(e.pointerId); } catch (_) {}
+
+    if (gestureLocked !== "x") { row.classList.remove("swiping"); return; }
+
+    const pct = currentX / rowWidth;
+    const elapsed = performance.now() - startedAt;
+    const isFlick = elapsed < QUICK_FLICK_MS && currentX > QUICK_FLICK_PX;
+    row.classList.remove("swiping");
+
+    if (pct >= THRESHOLD_FRAC || isFlick) {
+      // Commit: animate to full-right, fire haptic, complete
+      row.classList.add("swipe-complete");
+      row._swipedJustNow = true;
+      task.style.setProperty("--swipe-x", (rowWidth + 80) + "px");
+      if (navigator.vibrate) { try { navigator.vibrate(18); } catch (_) {} }
+      setTimeout(() => {
+        try { onComplete(); } catch (_) {}
+      }, 240);
+    } else {
+      // Cancel: spring back
+      setX(0);
+    }
+  };
+
+  task.addEventListener("pointerdown", onDown);
+  task.addEventListener("pointermove", onMove);
+  task.addEventListener("pointerup", onUp);
+  task.addEventListener("pointercancel", onUp);
+}
+
 // ----- TODAY -----
 function renderToday() {
   const today = todayISO();
@@ -2623,16 +2957,21 @@ function renderToday() {
   const inheritedFrom = inheritedForwardSleepFrom(viewDate);
 
   // Task list — mark overridden workout tasks
+  const swipeMode = getCompletionMode() === "swipe";
   const taskHtml = info.tasks.map(t => {
     const overridden = actOvr && t.id === "run" && (actOvr.type === "skip" || actOvr.type === "rest");
     const isDone = isChecked(viewDate, t.id);
+    const canSwipe = swipeMode && !isDone && !overridden;
     const noteHtml = overridden
       ? `<div class="task-override-note">↩ ${actOvr.type === "rest" ? "Rest day" : "Skipped"}${actOvr.note ? ` — ${escapeHtml(actOvr.note)}` : ""}</div>`
       : "";
     return `
-      <div class="task ${isDone ? "done" : ""} ${overridden ? "overridden" : ""}" data-task="${t.id}" data-cat="${t.id}">
-        <div class="checkbox"></div>
-        <div class="task-content"><div class="task-label">${t.label}</div>${noteHtml}</div>
+      <div class="task-row ${canSwipe ? "swipe-enabled" : ""}" data-task-row="${t.id}">
+        <div class="task-swipe-bg" aria-hidden="true"><span class="task-swipe-icon">✓</span><span class="task-swipe-label">${canSwipe ? "Release to complete" : ""}</span></div>
+        <div class="task ${isDone ? "done" : ""} ${overridden ? "overridden" : ""}" data-task="${t.id}" data-cat="${t.id}">
+          <div class="checkbox"></div>
+          <div class="task-content"><div class="task-label">${t.label}</div>${noteHtml}</div>
+        </div>
       </div>`;
   }).join("");
 
@@ -2724,6 +3063,13 @@ function renderToday() {
   content.querySelector("#task-list").addEventListener("click", e => {
     const t = e.target.closest(".task");
     if (!t) return;
+    const row = t.closest(".task-row");
+    // If a swipe just finished, the synthetic click that follows pointerup
+    // shouldn't also toggle the task.
+    if (row && row._swipedJustNow) { row._swipedJustNow = false; return; }
+    // In swipe mode, the body of the task is reserved for swiping — only
+    // the checkbox itself toggles (so you can still tap to undo).
+    if (getCompletionMode() === "swipe" && !t.classList.contains("done") && !e.target.closest(".checkbox")) return;
     const id = t.dataset.task;
     const newVal = !isChecked(viewDate, id);
     setCheck(viewDate, id, newVal);
@@ -2736,6 +3082,24 @@ function renderToday() {
     }
     renderToday();
   });
+
+  // Wire swipe-to-complete on each row (if swipe mode is on)
+  if (getCompletionMode() === "swipe") {
+    for (const row of content.querySelectorAll("#task-list .task-row.swipe-enabled")) {
+      attachSwipeToComplete(row, () => {
+        const id = row.dataset.taskRow;
+        setCheck(viewDate, id, true);
+        if (id === "run") {
+          const task = info.tasks.find(x => x.id === "run");
+          if (task && task.miles && !state.runs[viewDate]) {
+            state.runs[viewDate] = { actual: task.miles, notes: "" };
+            saveState();
+          }
+        }
+        renderToday();
+      });
+    }
+  }
 
   document.getElementById("prev-day").onclick   = () => { currentEditDate = null; currentViewDate = addDays(viewDate, -1); renderToday(); };
   document.getElementById("next-day").onclick   = () => { currentEditDate = null; currentViewDate = addDays(viewDate, 1);  renderToday(); };
@@ -3506,6 +3870,137 @@ function renderDashboard() {
     render();
   };
   wireSyncPanel();
+}
+
+// ----- SETTINGS -----
+function renderSettings() {
+  const isTouch = isTouchDevice();
+  const cm = state.settings.completionMode;
+  const activeMode = isTouch ? cm.mobile : cm.desktop;
+
+  const previewBlock = activeMode === "swipe" ? `
+    <div class="settings-preview">
+      <div class="settings-preview-title">Try it</div>
+      <div class="settings-preview-sub">Drag the row right past the line — release to complete <span class="demo-arrow">→</span></div>
+      <div class="task-list" id="settings-demo-list">
+        <div class="task-row swipe-enabled" data-task-row="demo">
+          <div class="task-swipe-bg" aria-hidden="true"><span class="task-swipe-icon">✓</span><span class="task-swipe-label">Release to complete</span></div>
+          <div class="task" data-task="demo" data-cat="run">
+            <div class="checkbox"></div>
+            <div class="task-content">
+              <div class="task-label">Demo task</div>
+              <div class="task-meta">Practice the gesture — this one resets after each swipe.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  ` : `
+    <div class="settings-preview">
+      <div class="settings-preview-title">Try it</div>
+      <div class="settings-preview-sub">Tap anywhere on the row to mark it done.</div>
+      <div class="task-list" id="settings-demo-list">
+        <div class="task-row" data-task-row="demo">
+          <div class="task" data-task="demo" data-cat="run">
+            <div class="checkbox"></div>
+            <div class="task-content">
+              <div class="task-label">Demo task</div>
+              <div class="task-meta">Click anywhere to toggle.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  content.innerHTML = `
+    <div class="panel">
+      <h2>Settings</h2>
+      <p class="settings-intro">Tune how the Master Plan companion behaves on each kind of device. Preferences save instantly and sync along with the rest of your data.</p>
+
+      <div class="settings-section">
+        <h3>Task Completion</h3>
+        <p class="settings-hint" style="margin-bottom:16px; max-width:600px;">
+          Choose how you mark daily checklist items as done on the <strong>Today</strong> tab.
+          Tap is fast and precise with a mouse; swipe-right feels great on a phone and prevents stray-finger taps —
+          a satisfying way to "cross things off" like you would on paper.
+        </p>
+
+        <div class="settings-row">
+          <div class="settings-label">
+            <strong>Mobile / touch ${isTouch ? `<span class="this-device-tag">● this device</span>` : ""}</strong>
+            <span class="settings-hint">Phones, tablets, and any touch screen.</span>
+          </div>
+          <div class="seg" role="radiogroup" aria-label="Mobile completion mode">
+            <button class="seg-btn ${cm.mobile === "tap" ? "active" : ""}" data-set-mobile="tap" role="radio" aria-checked="${cm.mobile === "tap"}">Tap to complete</button>
+            <button class="seg-btn ${cm.mobile === "swipe" ? "active" : ""}" data-set-mobile="swipe" role="radio" aria-checked="${cm.mobile === "swipe"}">Swipe to complete</button>
+          </div>
+        </div>
+
+        <div class="settings-row">
+          <div class="settings-label">
+            <strong>Desktop / mouse ${!isTouch ? `<span class="this-device-tag">● this device</span>` : ""}</strong>
+            <span class="settings-hint">Laptops and desktops with a pointer.</span>
+          </div>
+          <div class="seg" role="radiogroup" aria-label="Desktop completion mode">
+            <button class="seg-btn ${cm.desktop === "tap" ? "active" : ""}" data-set-desktop="tap" role="radio" aria-checked="${cm.desktop === "tap"}">Tap to complete</button>
+            <button class="seg-btn ${cm.desktop === "swipe" ? "active" : ""}" data-set-desktop="swipe" role="radio" aria-checked="${cm.desktop === "swipe"}">Swipe to complete</button>
+          </div>
+        </div>
+
+        ${previewBlock}
+      </div>
+
+      <div class="settings-section">
+        <h3>About</h3>
+        <div class="settings-hint" style="max-width:560px;">
+          Summer 2026 · Master Plan Companion. All progress lives in your browser's storage and (optionally) a private Gist backup — see the <strong>Dashboard → Cloud Sync</strong> panel.
+        </div>
+      </div>
+    </div>
+  `;
+
+  for (const btn of content.querySelectorAll("[data-set-mobile]")) {
+    btn.onclick = () => {
+      state.settings.completionMode.mobile = btn.dataset.setMobile;
+      saveState();
+      renderSettings();
+    };
+  }
+  for (const btn of content.querySelectorAll("[data-set-desktop]")) {
+    btn.onclick = () => {
+      state.settings.completionMode.desktop = btn.dataset.setDesktop;
+      saveState();
+      renderSettings();
+    };
+  }
+
+  // Wire the demo task so users can practice the swipe / tap
+  const demoList = document.getElementById("settings-demo-list");
+  if (demoList) {
+    const demoRow = demoList.querySelector(".task-row");
+    const demoTask = demoList.querySelector(".task");
+    const resetDemo = () => {
+      demoTask.classList.remove("done");
+      demoRow.classList.remove("swipe-complete");
+      demoTask.style.setProperty("--swipe-x", "0px");
+    };
+    if (activeMode === "swipe") {
+      attachSwipeToComplete(demoRow, () => {
+        demoTask.classList.add("done");
+        // Reset shortly after — the demo is just practice
+        setTimeout(() => resetDemo(), 1200);
+      });
+      // play a brief "swipe me" hint on first paint
+      demoRow.classList.add("swipe-hint");
+      setTimeout(() => demoRow.classList.remove("swipe-hint"), 1700);
+    } else {
+      demoTask.addEventListener("click", () => {
+        demoTask.classList.toggle("done");
+        setTimeout(() => demoTask.classList.remove("done"), 1200);
+      });
+    }
+  }
 }
 
 // Init — render from localStorage immediately, then pull latest from cloud
