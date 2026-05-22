@@ -1,13 +1,13 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no, maximum-scale=1">
-<title>Summer 2026 · Master Plan Portal</title>
+<title>Summer 2026 · Master Plan Companion</title>
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Summer26">
+<meta name="apple-mobile-web-app-title" content="MP Companion">
 <link rel="apple-touch-icon" href="icon.svg">
 <meta name="theme-color" content="#F5EFE0">
 <style>
@@ -43,6 +43,13 @@
   --warn:       #C68A2F;
   --danger:     #DC5F65;
 
+  --check:      #5C9F58;
+  --gold:       #C68A2F;
+  --accent:     #4A5BAE;
+  --bg:         #F5EFE0;
+  --text:       #2A261D;
+  --sat:        #5C9F58;
+
   --shadow-xs:  0 1px 2px rgba(42, 38, 29, 0.06);
   --shadow-sm:  0 2px 8px rgba(42, 38, 29, 0.06);
   --shadow:     0 10px 28px -8px rgba(42, 38, 29, 0.18);
@@ -53,6 +60,173 @@
   --r:    18px;
   --r-lg: 24px;
   --r-xl: 32px;
+}
+
+:root[data-theme="dark"] {
+  --paper:      #161310;
+  --paper-2:    #1F1B16;
+  --paper-3:    #26211A;
+  --ink:        #F2EAD7;
+  --ink-2:      #C7BDA6;
+  --muted:      #8E8472;
+  --dim:        #5F574A;
+  --border:     rgba(242, 234, 215, 0.08);
+  --border-2:   rgba(242, 234, 215, 0.16);
+
+  --butter:        #D4A33A;
+  --butter-soft:   #44351A;
+  --peach:         #C76F4A;
+  --peach-soft:    #3F2820;
+  --blush:         #B85D7A;
+  --blush-soft:    #3D2229;
+  --lavender:      #8E7CCC;
+  --lavender-soft: #2A2440;
+  --sky:           #5A98C2;
+  --sky-soft:      #1C2D3D;
+  --mint:          #66A973;
+  --mint-soft:     #1E3525;
+  --coral:         #E36849;
+  --indigo:        #7E8CD6;
+
+  --success:    #6FB36A;
+  --warn:       #D4A53C;
+  --danger:     #E26973;
+
+  --check:      #6FB36A;
+  --gold:       #D4A33A;
+  --accent:     #7E8CD6;
+  --bg:         #161310;
+  --text:       #F2EAD7;
+  --sat:        #6FB36A;
+
+  --shadow-xs:  0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm:  0 2px 8px rgba(0, 0, 0, 0.35);
+  --shadow:     0 10px 28px -8px rgba(0, 0, 0, 0.55);
+  --shadow-lg:  0 24px 48px -12px rgba(0, 0, 0, 0.65);
+
+  color-scheme: dark;
+}
+
+:root[data-theme="dark"] .mini-bar,
+:root[data-theme="dark"] .bar,
+:root[data-theme="dark"] .deck-progress,
+:root[data-theme="dark"] .pillar-bar {
+  background: rgba(242, 234, 215, 0.08);
+}
+:root[data-theme="dark"] .task[data-cat="rest"] { border-color: var(--coral); }
+:root[data-theme="dark"] .bubble { box-shadow: inset 0 -10px 18px rgba(0,0,0,0.25); }
+:root[data-theme="dark"] meta[name="theme-color"] { /* placeholder */ }
+
+/* ---------- Theme transition — soft radial bloom ----------
+   Click the toggle: a circle of the new theme blooms out from the button
+   with a soft feathered edge (like ink soaking through paper) on a smooth
+   ease-out, while the button's icon spins and swaps. ~600ms — snappy. */
+@property --reveal-radius {
+  syntax: '<length>';
+  initial-value: 0px;
+  inherits: false;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) {
+  animation: none;
+  z-index: 1;
+}
+::view-transition-new(root) {
+  z-index: 2;
+  --reveal-radius: 0px;
+  animation: themeReveal 650ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  -webkit-mask: radial-gradient(
+    circle at var(--theme-origin-x, 50%) var(--theme-origin-y, 50%),
+    #000 calc(var(--reveal-radius) - 60px),
+    transparent var(--reveal-radius)
+  );
+          mask: radial-gradient(
+    circle at var(--theme-origin-x, 50%) var(--theme-origin-y, 50%),
+    #000 calc(var(--reveal-radius) - 60px),
+    transparent var(--reveal-radius)
+  );
+}
+@keyframes themeReveal {
+  from { --reveal-radius: 0px;    }
+  to   { --reveal-radius: 3600px; }
+}
+
+:root.theme-transitioning,
+:root.theme-transitioning * {
+  /* suppress per-element bg transitions during reveal so the wave stays crisp */
+  transition: none !important;
+}
+
+/* Fallback for browsers without View Transitions API */
+.theme-sweep-fallback {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  --reveal-radius: 0px;
+  animation: themeReveal 650ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  -webkit-mask: radial-gradient(
+    circle at var(--theme-origin-x, 50%) var(--theme-origin-y, 50%),
+    #000 calc(var(--reveal-radius) - 60px),
+    transparent var(--reveal-radius)
+  );
+          mask: radial-gradient(
+    circle at var(--theme-origin-x, 50%) var(--theme-origin-y, 50%),
+    #000 calc(var(--reveal-radius) - 60px),
+    transparent var(--reveal-radius)
+  );
+}
+
+/* Toggle button itself — playful icon flip + pop while it triggers the wave */
+.theme-toggle.toggling {
+  animation: themeBtnPop 500ms cubic-bezier(0.34, 1.5, 0.64, 1);
+}
+.theme-toggle.toggling svg {
+  animation: themeIconSwap 600ms cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+@keyframes themeBtnPop {
+  0%   { transform: scale(1);    }
+  35%  { transform: scale(1.18); }
+  100% { transform: scale(1);    }
+}
+@keyframes themeIconSwap {
+  0%   { transform: rotate(0)        scale(1);   }
+  40%  { transform: rotate(180deg)   scale(0.4); }
+  100% { transform: rotate(360deg)   scale(1);   }
+}
+
+/* ---------- Per-tab accent palette ---------- */
+:root {
+  --tab-accent:      var(--coral);
+  --tab-accent-soft: var(--peach-soft);
+}
+:root[data-tab="today"]     { --tab-accent: #C68A2F; --tab-accent-soft: var(--butter-soft); }
+:root[data-tab="week"]      { --tab-accent: #6E5BAB; --tab-accent-soft: var(--lavender-soft); }
+:root[data-tab="anki"]      { --tab-accent: #D45670; --tab-accent-soft: var(--blush-soft); }
+:root[data-tab="running"]   { --tab-accent: #4F9F4D; --tab-accent-soft: var(--mint-soft); }
+:root[data-tab="mcat"]      { --tab-accent: #D4683F; --tab-accent-soft: var(--peach-soft); }
+:root[data-tab="dashboard"] { --tab-accent: #4A5BAE; --tab-accent-soft: var(--sky-soft); }
+
+:root[data-theme="dark"][data-tab="today"]     { --tab-accent: #E0A93C; }
+:root[data-theme="dark"][data-tab="week"]      { --tab-accent: #A293DC; }
+:root[data-theme="dark"][data-tab="anki"]      { --tab-accent: #E37A8E; }
+:root[data-theme="dark"][data-tab="running"]   { --tab-accent: #6FB36A; }
+:root[data-theme="dark"][data-tab="mcat"]      { --tab-accent: #E68258; }
+:root[data-theme="dark"][data-tab="dashboard"] { --tab-accent: #8E9CDC; }
+
+.title-dynamic { transition: color 0.4s cubic-bezier(0.16,1,0.3,1); min-width: 1ch; }
+.scribble      { color: var(--tab-accent); transition: color 0.4s cubic-bezier(0.16,1,0.3,1); }
+.hero-eyebrow  { transition: color 0.4s ease; }
+
+/* tab pill colors are already set explicitly per-tab; nothing else changes broadly */
+
+html { transition: background-color 0.35s ease; background: var(--paper); }
+body { transition: background-color 0.35s ease, color 0.35s ease; }
+.panel, .stat-card, .deck, .day-card, .task, nav.tabs, .cd-item, .exam-item, .cars-item, .resource-btn, .btn-ghost, .progress-pill, .sleep-block, .bubble-chart, textarea.notes, select, input[type="text"], input[type="number"], input[type="date"], input[type="time"], input[type="password"] {
+  transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -105,6 +279,23 @@ h1 {
   white-space: nowrap;
 }
 h1 .accent { font-style: italic; color: var(--coral); }
+.title-static { margin-right: 10px; }
+.title-static, .title-dynamic { display: inline-block; }
+h1 .title-dynamic { font-style: italic; color: var(--tab-accent); }
+.title-dynamic { transition: color 0.3s ease; min-width: 1ch; }
+.title-dynamic.swap-out {
+  animation: titleSwapOut 0.22s cubic-bezier(0.4,0,1,1) forwards;
+}
+.title-dynamic.swap-in {
+  animation: titleSwapIn 0.42s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+@keyframes titleSwapOut {
+  to { opacity: 0; transform: translateY(-8px) rotate(-2deg); filter: blur(2px); }
+}
+@keyframes titleSwapIn {
+  from { opacity: 0; transform: translateY(10px) rotate(1.5deg); filter: blur(3px); }
+  to   { opacity: 1; transform: translateY(0)   rotate(0);       filter: blur(0); }
+}
 .scribble {
   display: inline-block;
   margin-left: 14px;
@@ -113,6 +304,239 @@ h1 .accent { font-style: italic; color: var(--coral); }
   pointer-events: none;
   color: var(--coral);
   vertical-align: 0.35em;
+}
+.scribble path {
+  stroke-dasharray: 120;
+  stroke-dashoffset: 0;
+}
+
+/* ---------- Launch animation ---------- */
+body.launching .hero-eyebrow,
+body.launching #hero-title .title-static,
+body.launching #hero-title .title-dynamic,
+body.launching .scribble path,
+body.launching .countdown .cd-item,
+body.launching nav.tabs {
+  opacity: 0;
+}
+body.launched .hero-eyebrow {
+  animation: launchFadeUp 0.6s cubic-bezier(0.16,1,0.3,1) 1.85s both;
+}
+body.launched #hero-title .title-static {
+  animation: titleSettle 0.7s cubic-bezier(0.16,1,0.3,1) 1.95s both;
+}
+body.launched #hero-title .title-dynamic {
+  animation: titleSettle 0.7s cubic-bezier(0.16,1,0.3,1) 2.05s both;
+}
+body.launched .scribble path {
+  animation: scribbleDraw 0.7s cubic-bezier(0.65,0,0.35,1) 2.3s both;
+}
+body.launched .countdown .cd-item {
+  animation: cdSwing 0.7s cubic-bezier(0.16,1,0.3,1) both;
+}
+body.launched .countdown .cd-item:nth-child(1) { animation-delay: 2.1s; }
+body.launched .countdown .cd-item:nth-child(2) { animation-delay: 2.22s; }
+body.launched nav.tabs {
+  animation: launchFadeUp 0.55s cubic-bezier(0.16,1,0.3,1) 2.3s both;
+}
+
+@keyframes launchFadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+@keyframes titleSettle {
+  0%   { opacity: 0; transform: translateY(22px) scale(0.96); filter: blur(4px); }
+  60%  { filter: blur(0); }
+  100% { opacity: 1; transform: translateY(0)    scale(1);    filter: blur(0); }
+}
+@keyframes scribbleDraw {
+  from { stroke-dashoffset: 120; }
+  to   { stroke-dashoffset: 0;   }
+}
+@keyframes cdSwing {
+  from { opacity: 0; transform: translateY(-18px) rotate(4deg); }
+  to   { opacity: 1; transform: translateY(0)    rotate(0);    }
+}
+
+/* ---------- Launch overlay (Master Plan · Companion logo reveal) ---------- */
+.launch-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  background: var(--paper);
+  animation: overlayFade 0.55s cubic-bezier(0.65,0,0.35,1) 1.75s forwards;
+}
+.launch-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 34px;
+}
+.launch-title {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(54px, 11vw, 96px);
+  line-height: 0.95;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: baseline;
+}
+.launch-master, .launch-plan { display: inline-block; }
+.launch-master {
+  margin-right: 14px;
+  opacity: 0;
+  animation: launchWord 0.7s cubic-bezier(0.16,1,0.3,1) 0.15s forwards;
+}
+.launch-plan {
+  font-style: italic;
+  color: #4A5BAE; /* dashboard indigo accent — matches "Master Plan." identity */
+  opacity: 0;
+  animation: launchWord 0.7s cubic-bezier(0.16,1,0.3,1) 0.35s forwards;
+}
+:root[data-theme="dark"] .launch-plan { color: #8E9CDC; }
+.launch-scribble {
+  display: inline-block;
+  width: clamp(44px, 6vw, 70px);
+  height: clamp(30px, 4vw, 44px);
+  margin-left: 14px;
+  color: #4A5BAE;
+  vertical-align: 0.32em;
+}
+:root[data-theme="dark"] .launch-scribble { color: #8E9CDC; }
+.launch-scribble path {
+  stroke-dasharray: 120;
+  stroke-dashoffset: 120;
+  animation: scribbleDraw 0.7s cubic-bezier(0.65,0,0.35,1) 0.75s forwards;
+}
+.launch-companion {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 23px;
+  font-weight: 600;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  opacity: 0;
+  padding-left: 5px; /* visual balance for tracked-out letters */
+  animation: companionIn 0.7s cubic-bezier(0.16,1,0.3,1) 1.05s forwards;
+}
+.launch-logo {
+  animation: logoExit 0.6s cubic-bezier(0.65,0,0.35,1) 1.75s forwards;
+}
+@keyframes launchWord {
+  0%   { opacity: 0; transform: translateY(28px) scale(0.96); filter: blur(6px); }
+  60%  { filter: blur(0); }
+  100% { opacity: 1; transform: translateY(0)    scale(1);    filter: blur(0); }
+}
+@keyframes companionIn {
+  from { opacity: 0; transform: translateY(10px); letter-spacing: 14px; }
+  to   { opacity: 1; transform: translateY(0);    letter-spacing: 5px;  }
+}
+@keyframes logoExit {
+  from { opacity: 1; transform: scale(1)   translateY(0); }
+  to   { opacity: 0; transform: scale(0.94) translateY(-12px); }
+}
+@keyframes overlayFade {
+  from { opacity: 1; }
+  to   { opacity: 0; visibility: hidden; }
+}
+
+/* Preview-launch mode — overlay is shown statically so the layout can be edited */
+body.preview-launch .launch-overlay {
+  animation: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto;
+}
+body.preview-launch .launch-logo,
+body.preview-launch .launch-master,
+body.preview-launch .launch-plan,
+body.preview-launch .launch-companion {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+}
+body.preview-launch .launch-scribble path {
+  animation: none !important;
+  stroke-dashoffset: 0 !important;
+}
+body.preview-launch .launch-companion {
+  letter-spacing: 5px;
+}
+
+/* Content cascade — panels deal-up from below */
+body.launched #content > * {
+  animation: panelDealUp 0.7s cubic-bezier(0.16,1,0.3,1) both;
+}
+body.launched #content > *:nth-child(1) { animation-delay: 1.95s; }
+body.launched #content > *:nth-child(2) { animation-delay: 2.05s; }
+body.launched #content > *:nth-child(3) { animation-delay: 2.15s; }
+body.launched #content > *:nth-child(4) { animation-delay: 2.25s; }
+body.launched #content > *:nth-child(n+5) { animation-delay: 2.35s; }
+@keyframes panelDealUp {
+  from { opacity: 0; transform: translateY(28px) scale(0.985); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);     }
+}
+body.launching #content > * { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  body.launching * { opacity: 1 !important; }
+  body.launched  * { animation: none !important; }
+  .launch-overlay { display: none !important; }
+}
+
+/* ---------- Theme toggle ---------- */
+.toolbar-fab {
+  position: fixed;
+  z-index: 30;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid var(--border-2);
+  background: var(--paper-3);
+  color: var(--ink);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.toolbar-fab:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+.toolbar-fab:active { transform: translateY(0) scale(0.96); }
+.toolbar-fab svg { width: 20px; height: 20px; transition: transform 0.4s cubic-bezier(0.16,1,0.3,1); }
+.theme-toggle {
+  top: max(16px, env(safe-area-inset-top));
+  right: max(16px, env(safe-area-inset-right));
+}
+.launch-preview-btn {
+  top: max(16px, env(safe-area-inset-top));
+  right: calc(max(16px, env(safe-area-inset-right)) + 54px);
+}
+.launch-preview-btn.active {
+  background: var(--tab-accent);
+  color: #FFFCF3;
+  border-color: var(--tab-accent);
+}
+.theme-toggle .icon-sun  { display: none; }
+.theme-toggle .icon-moon { display: block; }
+:root[data-theme="dark"] .theme-toggle .icon-sun  { display: block; }
+:root[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+
+@media (max-width: 600px) {
+  .toolbar-fab { width: 40px; height: 40px; top: max(10px, env(safe-area-inset-top)); }
+  .theme-toggle { right: 10px; }
+  .launch-preview-btn { right: 58px; }
+  .toolbar-fab svg { width: 18px; height: 18px; }
+  header.hero { padding-right: 110px; }
 }
 .subtitle {
   color: var(--ink-2);
@@ -1022,12 +1446,27 @@ textarea.notes {
 }
 </style>
 </head>
-<body>
+<body class="launching">
+<div class="launch-overlay" id="launch-overlay" aria-hidden="true">
+  <div class="launch-logo">
+    <div class="launch-title">
+      <span class="launch-master">Master</span><span class="launch-plan">Plan.</span><svg class="launch-scribble" viewBox="0 0 56 36" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M4 22 C 12 10, 24 8, 36 14 S 50 26, 52 18"/></svg>
+    </div>
+    <div class="launch-companion">Companion</div>
+  </div>
+</div>
+<button class="toolbar-fab theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle theme">
+  <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M4.22 4.22l1.77 1.77M18.01 18.01l1.77 1.77M2 12h2.5M19.5 12H22M4.22 19.78l1.77-1.77M18.01 5.99l1.77-1.77"/></svg>
+</button>
+<button class="toolbar-fab launch-preview-btn" id="launch-preview-btn" aria-label="Preview launch screen" title="Preview launch screen (click to freeze it for editing)">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4l11 8-11 8z"/></svg>
+</button>
 <header class="hero">
   <div class="hero-row">
     <div class="hero-title-wrap">
       <div class="hero-eyebrow">Summer 2026</div>
-      <h1>Master <span class="accent">Plan.</span><svg class="scribble" viewBox="0 0 56 36" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M4 22 C 12 10, 24 8, 36 14 S 50 26, 52 18"/><path d="M40 4 L 46 10"/><path d="M44 4 L 50 8"/></svg></h1>
+      <h1 id="hero-title"><span class="title-static">Master</span><span class="title-dynamic accent">Plan.</span><svg class="scribble" viewBox="0 0 56 36" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M4 22 C 12 10, 24 8, 36 14 S 50 26, 52 18"/></svg></h1>
       <div id="sync-indicator"></div>
     </div>
     <div class="countdown" id="countdown"></div>
@@ -1912,13 +2351,193 @@ function wireUpAnkiCheckin(viewDate, rerender) {
 }
 
 // ============================================================
+// THEME (light / dark)
+// ============================================================
+const THEME_KEY = "summer2026_theme";
+function getInitialTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === "light" || saved === "dark") return saved;
+  if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) return "dark";
+  return "light";
+}
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute("content", theme === "dark" ? "#161310" : "#F5EFE0");
+}
+function setTheme(theme, animate = true, originEvent = null) {
+  // Origin = center of the toggle button (where the wave "comes out")
+  let originX, originY;
+  const btn = document.getElementById("theme-toggle");
+  if (btn) {
+    const r = btn.getBoundingClientRect();
+    originX = r.left + r.width / 2;
+    originY = r.top + r.height / 2;
+  } else {
+    originX = window.innerWidth - 32;
+    originY = 32;
+  }
+
+  const prefersReduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const supportsVT = typeof document.startViewTransition === "function";
+
+  if (!animate || prefersReduced) {
+    applyTheme(theme);
+    localStorage.setItem(THEME_KEY, theme);
+    return;
+  }
+
+  // Wire the CSS mask's conic-gradient origin to the button corner.
+  document.documentElement.style.setProperty("--theme-origin-x", originX + "px");
+  document.documentElement.style.setProperty("--theme-origin-y", originY + "px");
+
+  const wobble = () => {
+    if (!btn) return;
+    btn.classList.add("toggling");
+    setTimeout(() => btn.classList.remove("toggling"), 650);
+  };
+
+  if (supportsVT) {
+    document.documentElement.classList.add("theme-transitioning");
+    const transition = document.startViewTransition(() => {
+      applyTheme(theme);
+      localStorage.setItem(THEME_KEY, theme);
+    });
+    transition.finished.finally(() => {
+      document.documentElement.classList.remove("theme-transitioning");
+    });
+  } else {
+    // Fallback: solid-bg overlay with the same radial bloom mask.
+    const newBg = theme === "dark" ? "#161310" : "#F5EFE0";
+    const overlay = document.createElement("div");
+    overlay.className = "theme-sweep-fallback";
+    overlay.style.background = newBg;
+    document.body.appendChild(overlay);
+    setTimeout(() => {
+      applyTheme(theme);
+      localStorage.setItem(THEME_KEY, theme);
+    }, 500);
+    setTimeout(() => overlay.remove(), 750);
+  }
+
+  wobble();
+}
+// apply immediately so there's no flash
+applyTheme(getInitialTheme());
+document.documentElement.setAttribute("data-tab", currentTab);
+document.getElementById("theme-toggle").addEventListener("click", (e) => {
+  const cur = document.documentElement.getAttribute("data-theme") || "light";
+  setTheme(cur === "dark" ? "light" : "dark", true, e);
+});
+
+// ============================================================
+// LAUNCH PREVIEW — freeze the launch overlay in place so the
+// layout can be inspected and direct-edited.
+// ============================================================
+function setLaunchPreview(on) {
+  const body = document.body;
+  const btn = document.getElementById("launch-preview-btn");
+  let overlay = document.getElementById("launch-overlay");
+  if (on) {
+    // If the launch overlay has already been removed (after first launch),
+    // re-create it from a stored template so preview still works.
+    if (!overlay) {
+      overlay = document.createElement("div");
+      overlay.id = "launch-overlay";
+      overlay.className = "launch-overlay";
+      overlay.setAttribute("aria-hidden", "true");
+      overlay.innerHTML = `
+        <div class="launch-logo">
+          <div class="launch-title">
+            <span class="launch-master">Master</span><span class="launch-plan">Plan.</span><svg class="launch-scribble" viewBox="0 0 56 36" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M4 22 C 12 10, 24 8, 36 14 S 50 26, 52 18"/></svg>
+          </div>
+          <div class="launch-companion">Companion</div>
+        </div>`;
+      document.body.prepend(overlay);
+    }
+    body.classList.add("preview-launch");
+    btn.classList.add("active");
+    btn.title = "Exit launch preview";
+  } else {
+    body.classList.remove("preview-launch");
+    btn.classList.remove("active");
+    btn.title = "Preview launch screen (click to freeze it for editing)";
+    // If we re-created the overlay just for preview, remove it on exit so it
+    // doesn't block tab interactions.
+    const ov = document.getElementById("launch-overlay");
+    if (ov && !body.classList.contains("launching") && !body.classList.contains("launched")) {
+      ov.remove();
+    }
+  }
+}
+document.getElementById("launch-preview-btn").addEventListener("click", () => {
+  const on = !document.body.classList.contains("preview-launch");
+  setLaunchPreview(on);
+});
+
+// ============================================================
+// DYNAMIC HERO TITLE — "Master ____" by tab
+// ============================================================
+const TAB_TITLES = {
+  today:     "Today.",
+  week:      "Week.",
+  anki:      "Anki.",
+  running:   "Running.",
+  mcat:      "MCAT Exams.",
+  dashboard: "Plan.",  // special — dashboard reads as "Master Plan."
+};
+function updateHeroTitle(animate) {
+  const el = document.querySelector("#hero-title .title-dynamic");
+  if (!el) return;
+  const next = TAB_TITLES[currentTab] || "Plan.";
+  if (el.textContent === next) return;
+  if (!animate || document.body.classList.contains("launching")) {
+    el.textContent = next;
+    return;
+  }
+  el.classList.remove("swap-in", "swap-out");
+  // force reflow so removing+re-adding the class restarts the animation
+  void el.offsetWidth;
+  el.classList.add("swap-out");
+  setTimeout(() => {
+    el.textContent = next;
+    el.classList.remove("swap-out");
+    void el.offsetWidth;
+    el.classList.add("swap-in");
+  }, 200);
+}
+
+// ============================================================
+// LAUNCH ANIMATION — runs once on first load
+// ============================================================
+function playLaunchAnimation() {
+  const body = document.body;
+  // Remove the overlay element after its animation finishes so it can't block
+  // any later interactions or get re-played on tab change.
+  const overlay = document.getElementById("launch-overlay");
+  if (overlay) {
+    setTimeout(() => overlay.remove(), 2400);
+  }
+  setTimeout(() => {
+    body.classList.remove("launching");
+    body.classList.add("launched");
+    setTimeout(() => body.classList.remove("launched"), 3200);
+  }, 20);
+}
+
+// ============================================================
 // RENDER
 // ============================================================
 const content = document.getElementById("content");
 
 function setTab(tab) {
   currentTab = tab;
+  document.documentElement.setAttribute("data-tab", tab);
+  // Once the user interacts, the launch animation should no longer paint
+  // newly-rendered content (otherwise opacity-0 keyframes hide the new tab).
+  document.body.classList.remove("launching", "launched");
   for (const b of document.querySelectorAll(".tabs button")) b.classList.toggle("active", b.dataset.tab === tab);
+  updateHeroTitle(true);
   _replayTabAnim = true;
   render();
 }
@@ -2890,7 +3509,9 @@ function renderDashboard() {
 }
 
 // Init — render from localStorage immediately, then pull latest from cloud
+updateHeroTitle(false);
 _replayTabAnim = true; render();
+playLaunchAnimation();
 if (syncCfg.token && syncCfg.gistId) {
   pullFromGist().then(ok => { if (ok) render(); });
 }
