@@ -1178,6 +1178,7 @@ function defaultState() {
     exams: [],
     carsPassages: [],
     overrides: {},   // overrides[date] = { sleep?: {bedtime,wake,scope}, activity?: {type,note} }
+    savedAt: 0,      // ms timestamp of last local save — used to guard against stale Gist pulls
   };
 }
 function loadState() {
@@ -1195,10 +1196,12 @@ function loadState() {
       exams: s.exams || [],
       carsPassages: s.carsPassages || [],
       overrides: s.overrides || {},
+      savedAt: s.savedAt || 0,
     };
   } catch (e) { return defaultState(); }
 }
 function saveState() {
+  state.savedAt = Date.now();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   scheduleSyncSave();
 }
@@ -1298,16 +1301,28 @@ async function pullFromGist() {
     const raw = gist.files[GIST_FILENAME]?.content;
     if (!raw) { syncCfg.status = "idle"; updateSyncUI(); return false; }
     const remote = JSON.parse(raw);
+
+    // Guard: if local data was saved more recently than the Gist, don't let
+    // the network response overwrite in-flight changes the user just made.
+    // Instead, push local data up so the Gist catches up.
+    if (remote.savedAt && state.savedAt && remote.savedAt < state.savedAt) {
+      syncCfg.status = "idle";
+      updateSyncUI();
+      scheduleSyncSave();   // push the newer local state up to Gist
+      return false;
+    }
+
     const def = defaultState();
     state = {
-      checks:    remote.checks    || {},
-      notes:     remote.notes     || {},
-      anki:      { ...def.anki, ...(remote.anki || {}) },
-      ankiDaily: remote.ankiDaily || {},
-      runs:      remote.runs      || {},
+      checks:       remote.checks       || {},
+      notes:        remote.notes        || {},
+      anki:         { ...def.anki, ...(remote.anki || {}) },
+      ankiDaily:    remote.ankiDaily    || {},
+      runs:         remote.runs         || {},
       exams:        remote.exams        || [],
       carsPassages: remote.carsPassages || [],
       overrides:    remote.overrides    || {},
+      savedAt:      remote.savedAt      || 0,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     syncCfg.status = "idle";
