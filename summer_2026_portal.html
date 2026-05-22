@@ -1961,6 +1961,11 @@ async function pullFromGist() {
       exams:        remote.exams        || [],
       carsPassages: remote.carsPassages || [],
       overrides:    remote.overrides    || {},
+      settings: {
+        ...def.settings,
+        ...(remote.settings || {}),
+        completionMode: { ...def.settings.completionMode, ...((remote.settings && remote.settings.completionMode) || {}) },
+      },
       savedAt:      remote.savedAt      || 0,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -3855,7 +3860,8 @@ function renderDashboard() {
       try {
         const imported = JSON.parse(fr.result);
         if (!confirm("Replace current progress with imported data?")) return;
-        state = { ...defaultState(), ...imported, anki: { ...defaultState().anki, ...(imported.anki||{}) } };
+        const def2 = defaultState();
+        state = { ...def2, ...imported, anki: { ...def2.anki, ...(imported.anki||{}) }, settings: { ...def2.settings, ...(imported.settings||{}), completionMode: { ...def2.settings.completionMode, ...((imported.settings && imported.settings.completionMode)||{}) } } };
         saveState();
         render();
       } catch (err) { alert("Invalid file: " + err.message); }
