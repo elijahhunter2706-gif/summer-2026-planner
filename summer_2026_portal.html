@@ -366,7 +366,11 @@ body.launched nav.tabs {
 /* ---------- Launch overlay (Master Plan · Companion logo reveal) ---------- */
 .launch-overlay {
   position: fixed;
+  /* Explicit offsets as fallback — older iOS Safari doesn't always apply
+     inset: 0 before the first paint, causing a 1-frame position glitch. */
+  top: 0; right: 0; bottom: 0; left: 0;
   inset: 0;
+  width: 100%; height: 100%;          /* belt-and-suspenders sizing */
   z-index: 100;
   display: flex;
   flex-direction: column;
@@ -375,6 +379,10 @@ body.launched nav.tabs {
   pointer-events: none;
   background: var(--paper);
   animation: overlayFade 0.55s cubic-bezier(0.65,0,0.35,1) 1.75s forwards;
+  /* Force the overlay onto its own GPU layer immediately so it's composited
+     at the correct position before any animated children create their own. */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 .launch-logo {
   display: flex;
@@ -435,9 +443,10 @@ body.launched nav.tabs {
   animation: logoExit 0.6s cubic-bezier(0.65,0,0.35,1) 1.75s forwards;
 }
 @keyframes launchWord {
-  0%   { opacity: 0; transform: translateY(28px) scale(0.96); filter: blur(6px); }
-  60%  { filter: blur(0); }
-  100% { opacity: 1; transform: translateY(0)    scale(1);    filter: blur(0); }
+  /* filter: blur removed — it triggers a GPU compositing layer on iOS before
+     layout is settled, causing the text to flash at the wrong position. */
+  0%   { opacity: 0; transform: translateY(28px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0)    scale(1);    }
 }
 @keyframes companionIn {
   from { opacity: 0; transform: translateY(10px); letter-spacing: 14px; }
@@ -450,6 +459,13 @@ body.launched nav.tabs {
 @keyframes overlayFade {
   from { opacity: 1; }
   to   { opacity: 0; visibility: hidden; }
+}
+
+/* Hide FABs during launch so they can't peek through any stacking edge case */
+body.launching .toolbar-fab {
+  opacity: 0;
+  pointer-events: none;
+  transition: none;
 }
 
 /* Preview-launch mode — overlay is shown statically so the layout can be edited */
@@ -1764,9 +1780,13 @@ function getDayInfo(iso) {
     tasks.push({ id:"rest", label:"National Soren Day — full rest · No MCAT · No Anki ♥", info:true });
   } else if (dow === "SUN") {
     tasks.push({ id:"stretch", label:"Stretch 10 min · easy walk" });
-    tasks.push({ id:"exam", label:"Full MCAT Practice Exam" });
-    tasks.push({ id:"examreview", label:"Exam Review + Analysis" });
-    tasks.push({ id:"anki", label:"Anki — reviews ONLY (no new cards)" });
+    if (week.program) {
+      // Program weeks: full MCAT practice exam on Sundays
+      tasks.push({ id:"exam", label:"Full MCAT Practice Exam" });
+      tasks.push({ id:"examreview", label:"Exam Review + Analysis" });
+    }
+    // Any Sunday: Anki reviews / bonus cards (no new-card target, just log what you do)
+    tasks.push({ id:"anki", label:"Anki — reviews + bonus cards" });
   } else if (dow === "SAT") {
     tasks.push({ id:"run", label:`Long Run ${plan} mi · Zone 2 (longest of week)`, miles: plan });
     tasks.push({ id:"stretch", label:"Stretch 10 min" });
@@ -2449,24 +2469,23 @@ function ankiCheckinPanelHTML(viewDate) {
     return { deck, target, actual, backlogBefore };
   });
 
-  // Sunday and out-of-range: simple read-only message
-  if (!isCard && dow !== "TUE") {
-    const msg = dow === "SUN"
-      ? "Sunday — reviews only. No new cards today."
-      : "Outside summer plan range.";
+  // Out-of-range dates: simple read-only message
+  if (!isCard && dow !== "TUE" && dow !== "SUN") {
     return `
       <div class="panel">
         <h2>Anki · ${dow} ${shortDate(viewDate)}</h2>
-        <div class="hint">${msg} Backlog carrying: ${formatBacklog(totalBacklogBefore)}.</div>
+        <div class="hint">Outside summer plan range. Backlog carrying: ${formatBacklog(totalBacklogBefore)}.</div>
       </div>
     `;
   }
 
-  // Tuesday: no target, but allow logging bonus cards
+  // Tuesday + Sunday: no target, but allow logging bonus/review cards
   const isTuesday = dow === "TUE";
+  const isSunday  = dow === "SUN";
+  const isBonusDay = isTuesday || isSunday;
 
   const rowsHtml = rows.map(({ deck, target, actual, backlogBefore }) => {
-    const backlogAfter = isTuesday
+    const backlogAfter = isBonusDay
       ? backlogBefore - actual
       : backlogBefore + deck.perDay - actual;
     const extra = target - deck.perDay;
@@ -2475,8 +2494,8 @@ function ankiCheckinPanelHTML(viewDate) {
     return `
       <tr>
         <td><span style="display:inline-block; width:10px; height:10px; background:${deck.color}; border-radius:2px; margin-right:8px; vertical-align:middle;"></span><strong>${deck.name}</strong></td>
-        <td style="color:var(--muted);">${isTuesday ? "—" : deck.perDay}</td>
-        <td ${targetStyle}>${isTuesday ? "—" : target + extraTag}</td>
+        <td style="color:var(--muted);">${isBonusDay ? "—" : deck.perDay}</td>
+        <td ${targetStyle}>${isBonusDay ? "—" : target + extraTag}</td>
         <td><input type="number" min="0" max="999" data-checkin-deck="${deck.id}" data-checkin-date="${viewDate}" value="${actual || ""}" placeholder="0" style="width:72px;"></td>
         <td>${formatBacklog(backlogAfter)}</td>
       </tr>
@@ -2484,16 +2503,27 @@ function ankiCheckinPanelHTML(viewDate) {
   }).join("");
 
   const totalExtra = totalTarget - ANKI_PER_DAY;
-  const totalBacklogAfter = isTuesday
+  const totalBacklogAfter = isBonusDay
     ? totalBacklogBefore - totalActual
     : totalBacklogBefore + ANKI_PER_DAY - totalActual;
   const totalExtraTag = totalExtra > 0 ? ` <span class="hint" style="color:var(--gold);">+${totalExtra}</span>` : "";
   const totalStyle = totalExtra > 0 ? 'style="color:var(--gold); font-weight:700;"' : "";
 
+  const panelTitle = isTuesday
+    ? `Anki Bonus Log · TUE ${shortDate(viewDate)}`
+    : isSunday
+      ? `Anki Review Day · SUN ${shortDate(viewDate)}`
+      : `Anki Check-in · ${dow} ${shortDate(viewDate)}`;
+  const bonusHint = isTuesday
+    ? `National Soren Day — no target. Anything you log is a bonus and counts toward your running backlog.`
+    : isSunday
+      ? `Sunday review day — no new-card target. Log any cards you do and they'll count toward your backlog.`
+      : "";
+
   return `
     <div class="panel">
-      <h2>${isTuesday ? `Anki Bonus Log · TUE ${shortDate(viewDate)}` : `Anki Check-in · ${dow} ${shortDate(viewDate)}`}</h2>
-      ${isTuesday ? `<div class="hint" style="margin-bottom:12px;">National Soren Day — no target. Anything you log is a bonus and counts toward your running backlog.</div>` : ""}
+      <h2>${panelTitle}</h2>
+      ${bonusHint ? `<div class="hint" style="margin-bottom:12px;">${bonusHint}</div>` : ""}
       <div class="table-scroll">
       <table class="run-table">
         <thead><tr><th>Deck</th><th>Base</th><th>Today's Target</th><th>Done</th><th>Backlog After</th></tr></thead>
@@ -2510,9 +2540,9 @@ function ankiCheckinPanelHTML(viewDate) {
       </table>
       </div>
       <div class="row" style="margin-top:10px;">
-        ${isTuesday ? "" : `<button class="btn btn-sm" data-anki-action="fill-all" data-date="${viewDate}">Hit all targets</button>`}
+        ${isBonusDay ? "" : `<button class="btn btn-sm" data-anki-action="fill-all" data-date="${viewDate}">Hit all targets</button>`}
         <button class="btn btn-sm btn-ghost" data-anki-action="clear" data-date="${viewDate}">Clear day</button>
-        <div class="hint" style="margin-left:auto;">${isTuesday ? "Bonus cards count toward your backlog." : "Missed cards redistribute across remaining card-days this week (Mon · Wed · Thu · Fri · Sat)."}</div>
+        <div class="hint" style="margin-left:auto;">${isBonusDay ? "Bonus cards count toward your backlog." : "Missed cards redistribute across remaining card-days this week (Mon · Wed · Thu · Fri · Sat)."}</div>
       </div>
     </div>
   `;
@@ -2750,11 +2780,16 @@ function playLaunchAnimation() {
   if (overlay) {
     setTimeout(() => overlay.remove(), 2400);
   }
-  setTimeout(() => {
+  // Double-rAF: first rAF = browser has received the frame request;
+  // second rAF = layout+paint for this frame is committed. This guarantees
+  // the overlay is already rendered at its correct full-screen position before
+  // the CSS keyframe animations on the logo children begin. Replaces the
+  // old setTimeout(..., 20) which could fire before the first paint on iOS.
+  requestAnimationFrame(() => requestAnimationFrame(() => {
     body.classList.remove("launching");
     body.classList.add("launched");
     setTimeout(() => body.classList.remove("launched"), 3200);
-  }, 20);
+  }));
 }
 
 // ============================================================
