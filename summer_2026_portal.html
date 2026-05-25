@@ -1199,6 +1199,127 @@ textarea.notes {
 .ch-grand-bar-wrap { height: 8px; background: var(--border); border-radius: 999px; overflow: hidden; margin: 12px 0 6px; }
 .ch-grand-bar { height: 100%; border-radius: 999px; background: var(--blush); transition: width 0.5s; }
 
+/* ── Captain Hook view-mode toggle ───────────────────────── */
+.ch-view-toggle { display: flex; gap: 6px; margin-bottom: 16px; }
+.ch-view-btn {
+  padding: 6px 14px; border-radius: 999px; font-family: inherit;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  border: 1px solid var(--border); background: var(--paper-2); color: var(--ink-2);
+  transition: background 0.18s, color 0.18s;
+}
+.ch-view-btn:hover { color: var(--ink); }
+.ch-view-btn.active { background: var(--blush); color: var(--ink); border-color: transparent; }
+
+/* ── Pathway (Duolingo-style) ────────────────────────────── */
+.chp-header { margin-bottom: 6px; }
+.chp-pace-badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--butter-soft); color: var(--gold);
+  border: 1.5px solid var(--butter); border-radius: 999px;
+  padding: 5px 14px; font-size: 12.5px; font-weight: 700; margin-bottom: 10px;
+}
+.chp-path-wrap {
+  position: relative;
+  padding: 8px 0 24px;
+}
+/* Section world banner */
+.chp-world {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 14px; margin: 20px 0 10px;
+  background: var(--paper-2); border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-size: 13px; font-weight: 700;
+}
+.chp-world:first-child { margin-top: 4px; }
+.chp-world-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.chp-world-right { margin-left: auto; font-size: 11px; color: var(--muted); font-weight: 600; }
+/* Node row positioning (zig-zag: left → center → right → center) */
+.chp-row { display: flex; margin-bottom: 0; }
+.chp-row.cp-L { justify-content: flex-start;  padding-left: 6%; }
+.chp-row.cp-C { justify-content: center; }
+.chp-row.cp-R { justify-content: flex-end;   padding-right: 6%; }
+/* Node */
+.chp-node {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  width: 84px; cursor: pointer;
+}
+.chp-circle {
+  width: 72px; height: 72px; border-radius: 50%;
+  position: relative; overflow: hidden;
+  border: 3px solid var(--border-2);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.18s, box-shadow 0.18s;
+  flex-shrink: 0;
+}
+.chp-circle:hover { transform: scale(1.07); }
+.chp-fill {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  transition: height 0.55s cubic-bezier(0.16,1,0.3,1);
+  pointer-events: none;
+}
+.chp-icon {
+  position: relative; z-index: 1; font-size: 22px;
+  font-weight: 800; line-height: 1; text-align: center;
+  pointer-events: none; user-select: none;
+}
+.chp-name {
+  font-size: 10.5px; font-weight: 600; color: var(--ink-2);
+  text-align: center; line-height: 1.25; max-width: 80px;
+  word-break: break-word;
+}
+.chp-cnt { font-size: 10px; color: var(--muted); }
+/* Node states */
+.chp-done .chp-circle  { border-color: var(--check); }
+.chp-done .chp-icon    { color: var(--check); }
+.chp-active .chp-circle {
+  border-color: var(--tab-accent, var(--blush));
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--tab-accent,var(--blush)) 20%, transparent);
+  animation: chp-glow 2.2s ease-in-out infinite;
+}
+.chp-active .chp-icon  { color: var(--tab-accent, var(--blush)); }
+.chp-upcoming .chp-circle { opacity: 0.45; }
+.chp-upcoming .chp-name   { opacity: 0.55; }
+.chp-upcoming .chp-cnt    { opacity: 0.45; }
+@keyframes chp-glow {
+  0%,100% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--tab-accent,var(--blush)) 18%, transparent); }
+  50%      { box-shadow: 0 0 0 11px color-mix(in srgb, var(--tab-accent,var(--blush)) 8%, transparent); }
+}
+/* Connector line between nodes */
+.chp-conn { display:flex; justify-content:center; height:26px; }
+.chp-conn-line {
+  width:3px; height:100%;
+  border-left:3px dashed var(--border-2);
+}
+/* Today's goal marker */
+.chp-today-line {
+  display: flex; align-items: center; gap: 8px; margin: 6px 8px;
+}
+.chp-today-line::before, .chp-today-line::after {
+  content:""; flex:1; height:2px; background:var(--butter); border-radius:1px;
+}
+.chp-today-badge {
+  font-size: 11.5px; font-weight: 700; color: var(--gold);
+  background: var(--butter-soft); border-radius: 999px;
+  padding: 3px 12px; white-space: nowrap;
+}
+/* Expanded node panel */
+.chp-panel {
+  background: var(--paper-3); border: 1px solid var(--border);
+  border-radius: var(--r-sm); padding: 14px; margin: 8px 10px;
+  animation: chp-fadein 0.18s ease;
+}
+@keyframes chp-fadein { from { opacity:0; transform:translateY(-5px); } to { opacity:1; transform:translateY(0); } }
+.chp-panel-title { font-weight: 700; font-size: 14px; margin-bottom: 8px; }
+.chp-panel-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.chp-panel-input { width: 72px; }
+.chp-done-check { color: var(--check); font-weight: 700; font-size: 13px; }
+/* Pace stat chips */
+.chp-stats { display:flex; gap:8px; flex-wrap:wrap; margin:10px 0 6px; }
+.chp-stat { background:var(--paper-2); border:1px solid var(--border); border-radius:var(--r-sm); padding:10px 14px; flex:1; min-width:120px; }
+.chp-stat-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.2px; color:var(--muted); margin-bottom:3px; }
+.chp-stat-val { font-size:20px; font-weight:800; color:var(--ink); }
+.chp-stat-sub { font-size:11px; color:var(--muted); margin-top:1px; }
+
 .bubble-chart {
   position: relative;
   min-height: 260px;
@@ -2120,8 +2241,8 @@ const CH_SECTIONS = [
     desc:"v24 · Cards pulled from official AAMC full-length errors",
     groups:[
       { label:null, items:[
-        { id:"aamc_cp", label:"C/P Errors",          total:52 },
         { id:"aamc_bb", label:"B/B Errors",          total:29 },
+        { id:"aamc_cp", label:"C/P Errors",          total:52 },
         { id:"aamc_ps", label:"P/S Errors",          total:39 },
         { id:"aamc_rw", label:"Random Weak Topics",  total:17 },
       ]}
@@ -2132,9 +2253,9 @@ const CH_SECTIONS = [
     desc:"v25 · \"I DIDN'T USE THESE\" — original deck, bonus reference only",
     groups:[
       { label:null, items:[
-        { id:"og_cp",   label:"C/P Miscellaneous", total:464 },
-        { id:"og_bb",   label:"B/B Miscellaneous", total:436 },
         { id:"og_aamc", label:"AAMC (spoilers)",   total:359 },
+        { id:"og_bb",   label:"B/B Miscellaneous", total:436 },
+        { id:"og_cp",   label:"C/P Miscellaneous", total:464 },
       ]}
     ]
   },
@@ -2550,7 +2671,9 @@ let currentTab = "today";
 let currentViewDate = null;
 let currentWeekIdx = null;
 let currentEditDate = null; // date string when the override editor is open, null when closed
-let ankiSubTab = "main"; // "main" | "captain"
+let ankiSubTab   = "main";   // "main" | "captain"
+let chViewMode   = "path";   // "path" | "list"
+let chExpandedId = null;     // which pathway node is tapped open
 
 // ============================================================
 // SCHEDULE OVERRIDES
@@ -3688,8 +3811,28 @@ function renderWeek() {
 }
 
 // ============================================================
-// CAPTAIN HOOK DECK helpers
+// CAPTAIN HOOK DECK helpers + PATHWAY
 // ============================================================
+// Flat pathway node list in creator's exact chapter order
+const CH_PATHWAY_NODES = CH_SECTIONS.flatMap(sec =>
+  sec.groups.flatMap(g => g.items.map(it => ({ ...it, sec })))
+);
+
+function chDailyTarget() {
+  const CH_END = "2026-07-31";
+  const today  = todayISO();
+  if (today > CH_END) return { daysLeft:0, remaining:0, perDay:0, totalDone:0 };
+  // Count available days today→end, excluding Tuesdays (Soren Day)
+  let daysLeft = 0, d = today;
+  while (d <= CH_END) {
+    if (DOW_LABELS[dayIdxFromISO(d)] !== "TUE") daysLeft++;
+    d = addDays(d, 1);
+  }
+  const totalDone = CH_PATHWAY_NODES.reduce((s, p) => s + getCHDone(p.id), 0);
+  const remaining = Math.max(0, CH_TOTAL - totalDone);
+  const perDay    = daysLeft > 0 ? Math.ceil(remaining / daysLeft) : 0;
+  return { daysLeft, remaining, perDay, totalDone };
+}
 function getCHDone(id) { return parseInt(localStorage.getItem("ch2026_done_" + id) || "0") || 0; }
 function setCHDone(id, val) { localStorage.setItem("ch2026_done_" + id, Math.max(0, parseInt(val)||0)); }
 function isCHSecOpen(secId) { return localStorage.getItem("ch2026_open_" + secId) === "1"; }
@@ -3701,7 +3844,186 @@ function chSectionTotals(sec) {
   return { total, done };
 }
 
+function renderAnkiCHPathway() {
+  const { daysLeft, remaining, perDay, totalDone } = chDailyTarget();
+  const totalPct = CH_TOTAL ? Math.round(totalDone / CH_TOTAL * 100) : 0;
+
+  // Find active node index (first incomplete)
+  let activeIdx = CH_PATHWAY_NODES.findIndex(p => getCHDone(p.id) < p.total);
+  if (activeIdx === -1) activeIdx = CH_PATHWAY_NODES.length;
+
+  // Find today's stopping node (accumulate until we hit perDay cards from active node onward)
+  let todayStopIdx = -1;
+  if (activeIdx < CH_PATHWAY_NODES.length && perDay > 0) {
+    let accum = 0;
+    for (let i = activeIdx; i < CH_PATHWAY_NODES.length; i++) {
+      accum += Math.max(0, CH_PATHWAY_NODES[i].total - getCHDone(CH_PATHWAY_NODES[i].id));
+      todayStopIdx = i;
+      if (accum >= perDay) break;
+    }
+  }
+
+  // zig-zag positions: L C R C L C R C …
+  const POSITIONS = ["cp-L","cp-C","cp-R","cp-C"];
+
+  let lastSecId = null, posIdx = 0;
+  let pathHtml = "";
+
+  for (let i = 0; i < CH_PATHWAY_NODES.length; i++) {
+    const p    = CH_PATHWAY_NODES[i];
+    const done = getCHDone(p.id);
+    const pct  = p.total ? Math.min(100, Math.round(done / p.total * 100)) : 0;
+
+    // Section world banner
+    if (p.sec.id !== lastSecId) {
+      const { done: sDone, total: sTotal } = chSectionTotals(p.sec);
+      const sPct = sTotal ? Math.round(sDone / sTotal * 100) : 0;
+      pathHtml += `<div class="chp-world">
+        <div class="chp-world-dot" style="background:${p.sec.color};"></div>
+        <span>${p.sec.label}</span>
+        <span class="chp-world-right">${sDone}/${sTotal} · ${sPct}%</span>
+      </div>`;
+      lastSecId = p.sec.id;
+      posIdx = 0; // reset zig-zag at each world
+    }
+
+    // Node state
+    let stateClass;
+    if (done >= p.total)        stateClass = "chp-done";
+    else if (i === activeIdx)   stateClass = "chp-active";
+    else                        stateClass = "chp-upcoming";
+
+    // Circle display
+    const iconText = done >= p.total ? "✓" : pct > 0 ? `${pct}%` : (i === activeIdx ? "▶" : "·");
+    const fillColor = `${p.sec.color}40`; // 25% opacity fill
+    const borderColor = done >= p.total ? "var(--check)"
+                      : i === activeIdx  ? p.sec.color
+                      : "var(--border-2)";
+    const iconColor = done >= p.total ? "var(--check)"
+                    : i === activeIdx  ? p.sec.color
+                    : "var(--muted)";
+
+    // Short label (strip leading number like "01 ")
+    const shortLabel = p.label.replace(/^\d+\s+/, "").replace(/^[A-Z0-9]+[A-Z0-9\/]*\s+/,"");
+
+    const rowPos = POSITIONS[posIdx % 4];
+    posIdx++;
+
+    pathHtml += `<div class="chp-row ${rowPos}">
+      <div class="chp-node ${stateClass}" data-chp-node="${p.id}">
+        <div class="chp-circle" style="border-color:${borderColor};">
+          <div class="chp-fill" style="height:${pct}%;background:${fillColor};"></div>
+          <div class="chp-icon" style="color:${iconColor};">${iconText}</div>
+        </div>
+        <div class="chp-name">${shortLabel}</div>
+        <div class="chp-cnt">${done}/${p.total}</div>
+      </div>
+    </div>`;
+
+    // Expanded inline panel
+    if (chExpandedId === p.id) {
+      const finished = done >= p.total;
+      pathHtml += `<div class="chp-panel" id="chp-panel-${p.id}">
+        <div class="chp-panel-title">${p.label}</div>
+        ${finished
+          ? `<div class="chp-done-check">✓ Complete — ${p.total} cards done</div>`
+          : `<div class="chp-panel-row">
+              <span style="font-size:13px;color:var(--muted);">Cards done:</span>
+              <input type="number" class="chp-panel-input" data-chp-id="${p.id}"
+                     min="0" max="${p.total}" value="${done||""}" placeholder="0">
+              <span style="font-size:13px;color:var(--muted);">/ ${p.total}</span>
+              ${done > 0 ? `<span style="font-size:12px;color:var(--muted);">${pct}% complete</span>` : ""}
+            </div>`
+        }
+      </div>`;
+    }
+
+    // "Today's goal" line — drawn after the last node for today
+    if (i === todayStopIdx && activeIdx < CH_PATHWAY_NODES.length) {
+      pathHtml += `<div class="chp-today-line"><span class="chp-today-badge">📍 Today's goal — ${perDay} cards</span></div>`;
+    }
+
+    // Connector line (not after last node)
+    if (i < CH_PATHWAY_NODES.length - 1) {
+      pathHtml += `<div class="chp-conn"><div class="chp-conn-line"></div></div>`;
+    }
+  }
+
+  const allDone = activeIdx >= CH_PATHWAY_NODES.length;
+
+  content.innerHTML = `
+    <div class="anki-subtabs">
+      <button class="anki-subtab-btn" data-anki-subtab="main">My Decks</button>
+      <button class="anki-subtab-btn active" data-anki-subtab="captain">⚓ Captain Hook</button>
+    </div>
+    <div class="panel chp-header">
+      <h2>⚓ Captain Hook Pathway</h2>
+      <div class="ch-view-toggle">
+        <button class="ch-view-btn active" data-chv="path">🗺 Pathway</button>
+        <button class="ch-view-btn"        data-chv="list">📋 List</button>
+      </div>
+      ${allDone
+        ? `<div class="chp-pace-badge">🎉 All ${CH_TOTAL.toLocaleString()} cards complete!</div>`
+        : `<div class="chp-pace-badge">🎯 ${perDay} cards/day to finish by July 31</div>`}
+      <div class="chp-stats">
+        <div class="chp-stat">
+          <div class="chp-stat-label">Studied</div>
+          <div class="chp-stat-val">${totalDone.toLocaleString()}</div>
+          <div class="chp-stat-sub">${totalPct}% of ${CH_TOTAL.toLocaleString()}</div>
+        </div>
+        <div class="chp-stat">
+          <div class="chp-stat-label">Remaining</div>
+          <div class="chp-stat-val">${remaining.toLocaleString()}</div>
+          <div class="chp-stat-sub">${daysLeft} days left</div>
+        </div>
+        <div class="chp-stat">
+          <div class="chp-stat-label">Daily pace</div>
+          <div class="chp-stat-val">${perDay}</div>
+          <div class="chp-stat-sub">cards/day · excl. Tuesdays</div>
+        </div>
+      </div>
+      <div class="ch-grand-bar-wrap"><div class="ch-grand-bar" style="width:${totalPct}%;"></div></div>
+    </div>
+    <div class="panel" style="padding:12px 10px;">
+      <div class="chp-path-wrap">${pathHtml}</div>
+    </div>
+  `;
+
+  // Scroll to active node on first render
+  const activeEl = content.querySelector(".chp-active");
+  if (activeEl) setTimeout(() => activeEl.scrollIntoView({ behavior:"smooth", block:"center" }), 120);
+
+  // Sub-tab switch
+  for (const btn of content.querySelectorAll("[data-anki-subtab]"))
+    btn.addEventListener("click", () => { ankiSubTab = btn.dataset.ankiSubtab; renderAnki(); });
+
+  // View mode toggle
+  for (const btn of content.querySelectorAll("[data-chv]"))
+    btn.addEventListener("click", () => { chViewMode = btn.dataset.chv; renderAnki(); });
+
+  // Node tap — expand/collapse
+  for (const nd of content.querySelectorAll("[data-chp-node]")) {
+    nd.addEventListener("click", () => {
+      const id = nd.dataset.chpNode;
+      chExpandedId = chExpandedId === id ? null : id;
+      renderAnkiCHPathway();
+    });
+  }
+
+  // Input changes inside expanded panel
+  for (const inp of content.querySelectorAll("[data-chp-id]")) {
+    inp.addEventListener("change", () => {
+      const val = Math.max(0, Math.min(parseInt(inp.value)||0, parseInt(inp.max)||9999));
+      inp.value = val || "";
+      setCHDone(inp.dataset.chpId, val);
+      renderAnkiCHPathway();
+    });
+  }
+}
+
 function renderAnkiCH() {
+  if (chViewMode === "path") { renderAnkiCHPathway(); return; }
+
   const grandDone  = CH_SECTIONS.reduce((s,sec) => s + chSectionTotals(sec).done,  0);
   const grandPct   = CH_TOTAL ? Math.round(grandDone / CH_TOTAL * 100) : 0;
 
@@ -3749,6 +4071,10 @@ function renderAnkiCH() {
     </div>
     <div class="panel">
       <h2>⚓ Captain Hook Deck</h2>
+      <div class="ch-view-toggle">
+        <button class="ch-view-btn" data-chv="path">🗺 Pathway</button>
+        <button class="ch-view-btn active" data-chv="list">📋 List</button>
+      </div>
       <div class="hint" style="margin-bottom:12px;">Bonus reference deck — <strong>not counted in your daily quotas</strong>. Track how many cards you've covered in each sub-deck.</div>
       <div class="ch-grand-bar-wrap"><div class="ch-grand-bar" style="width:${grandPct}%;"></div></div>
       <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:18px;">
@@ -3761,9 +4087,12 @@ function renderAnkiCH() {
   `;
 
   // Sub-tab switch
-  for (const btn of content.querySelectorAll("[data-anki-subtab]")) {
+  for (const btn of content.querySelectorAll("[data-anki-subtab]"))
     btn.addEventListener("click", () => { ankiSubTab = btn.dataset.ankiSubtab; renderAnki(); });
-  }
+
+  // View mode toggle (list ↔ path)
+  for (const btn of content.querySelectorAll("[data-chv]"))
+    btn.addEventListener("click", () => { chViewMode = btn.dataset.chv; renderAnki(); });
 
   // Section expand/collapse
   for (const hd of content.querySelectorAll("[data-ch-toggle]")) {
