@@ -1148,6 +1148,57 @@ textarea.notes {
 }
 .deck-numbers { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px; }
 
+/* ── Anki sub-tabs (My Decks / Captain Hook) ─────────────── */
+.anki-subtabs { display: flex; gap: 6px; margin-bottom: 18px; flex-wrap: wrap; }
+.anki-subtab-btn {
+  background: var(--paper-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.anki-subtab-btn:hover { color: var(--ink); }
+.anki-subtab-btn.active { background: var(--blush); color: var(--ink); border-color: transparent; box-shadow: var(--shadow-xs); }
+
+/* ── Captain Hook section panels ─────────────────────────── */
+.ch-section { background: var(--paper-2); border-radius: var(--r); border: 1px solid var(--border); margin-bottom: 10px; overflow: hidden; }
+.ch-section-hd {
+  display: flex; align-items: center; gap: 10px;
+  padding: 15px 18px;
+  cursor: pointer; user-select: none;
+  transition: background 0.15s;
+}
+.ch-section-hd:hover { background: rgba(42,38,29,0.04); }
+.ch-section-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.ch-section-title { flex: 1; font-weight: 700; font-size: 15px; }
+.ch-section-meta { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.ch-section-bar-wrap { width: 64px; height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; flex-shrink: 0; }
+.ch-section-bar { height: 100%; border-radius: 999px; transition: width 0.5s; }
+.ch-section-chevron { color: var(--muted); font-size: 18px; line-height: 1; transition: transform 0.22s; flex-shrink: 0; }
+.ch-section.ch-open .ch-section-chevron { transform: rotate(90deg); }
+.ch-section-body { display: none; padding: 0 18px 14px; }
+.ch-section.ch-open .ch-section-body { display: block; }
+.ch-group-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.5px; color: var(--muted);
+  margin: 14px 0 8px; padding-top: 10px; border-top: 1px solid var(--border);
+}
+.ch-group-label:first-child { border-top: none; margin-top: 4px; padding-top: 0; }
+.ch-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+.ch-row:last-child { border-bottom: none; }
+.ch-row-name { flex: 1; font-size: 13px; color: var(--ink-2); }
+.ch-row-bar-wrap { width: 60px; height: 5px; background: var(--border); border-radius: 999px; overflow: hidden; flex-shrink: 0; }
+.ch-row-bar { height: 100%; border-radius: 999px; transition: width 0.4s; }
+.ch-row-input { width: 58px; flex-shrink: 0; }
+.ch-row-total { font-size: 11px; color: var(--muted); min-width: 34px; text-align: right; flex-shrink: 0; }
+.ch-grand-bar-wrap { height: 8px; background: var(--border); border-radius: 999px; overflow: hidden; margin: 12px 0 6px; }
+.ch-grand-bar { height: 100%; border-radius: 999px; background: var(--blush); transition: width 0.5s; }
+
 .bubble-chart {
   position: relative;
   min-height: 260px;
@@ -1945,6 +1996,152 @@ const ANKI_DECKS = [
 const ANKI_TOTAL = ANKI_DECKS.reduce((s,d) => s + d.total, 0); // 2887
 const ANKI_PER_DAY = ANKI_DECKS.reduce((s,d) => s + d.perDay, 0); // 38
 
+// Captain Hook deck — bonus reference, NOT counted in daily quotas
+const CH_SECTIONS = [
+  {
+    id:"eq", label:"Essential Equations", color:"#ffd93d",
+    desc:"v20 · Formulas and MCAT unit reference",
+    groups:[
+      { label:null, items:[
+        { id:"eq_main",  label:"Essential Equations", total:111 },
+        { id:"eq_units", label:"MCAT Units",          total:51  },
+      ]}
+    ]
+  },
+  {
+    id:"cp", label:"C/P — Chemical & Physical", color:"#4dd9ff",
+    desc:"v21 · 36 sub-decks · Chemistry · Organic Chemistry · Physics/Math",
+    groups:[
+      { label:"A) Chemistry", items:[
+        { id:"cp_a01", label:"01 Atomic Structure",              total:44 },
+        { id:"cp_a02", label:"02 The Periodic Table",            total:28 },
+        { id:"cp_a03", label:"03 Bonding & Chemical Interactions",total:68 },
+        { id:"cp_a04", label:"04 Compounds & Stoichiometry",     total:18 },
+        { id:"cp_a05", label:"05 Chemical Kinetics",             total:55 },
+        { id:"cp_a06", label:"06 Equilibrium",                   total:26 },
+        { id:"cp_a07", label:"07 Thermochemistry",               total:51 },
+        { id:"cp_a08", label:"08 The Gas Phase",                 total:23 },
+        { id:"cp_a09", label:"09 Solutions",                     total:49 },
+        { id:"cp_a10", label:"10 Acids & Bases",                 total:60 },
+        { id:"cp_a11", label:"11 Oxidation-Reduction",           total:18 },
+        { id:"cp_a12", label:"12 Electrochemistry",              total:30 },
+      ]},
+      { label:"B) Organic Chemistry", items:[
+        { id:"cp_b01", label:"01 Nomenclature",                        total:42 },
+        { id:"cp_b02", label:"02 Isomers",                             total:56 },
+        { id:"cp_b03", label:"03 Bonding",                             total:27 },
+        { id:"cp_b04", label:"04 Analyzing Organic Reactions",         total:32 },
+        { id:"cp_b05", label:"05 Alcohols",                            total:14 },
+        { id:"cp_b06", label:"06 Aldehydes & Ketones I",               total:14 },
+        { id:"cp_b07", label:"07 Aldehydes & Ketones II",              total:16 },
+        { id:"cp_b08", label:"08 Carboxylic Acids",                    total:14 },
+        { id:"cp_b09", label:"09 Carboxylic Acid Derivatives",         total:9  },
+        { id:"cp_b10", label:"10 N/P-Containing Compounds",            total:18 },
+        { id:"cp_b11", label:"11 Spectroscopy",                        total:36 },
+        { id:"cp_b12", label:"12 Separations & Purifications",         total:31 },
+      ]},
+      { label:"C) Physics/Math", items:[
+        { id:"cp_c01", label:"01 Kinematics & Dynamics",               total:51 },
+        { id:"cp_c02", label:"02 Work & Energy",                       total:32 },
+        { id:"cp_c03", label:"03 Thermodynamics",                      total:46 },
+        { id:"cp_c04", label:"04 Fluids",                              total:45 },
+        { id:"cp_c05", label:"05 Electrostatics & Magnetism",          total:52 },
+        { id:"cp_c06", label:"06 Circuits",                            total:54 },
+        { id:"cp_c07", label:"07 Waves & Sound",                       total:64 },
+        { id:"cp_c08", label:"08 Light & Optics",                      total:80 },
+        { id:"cp_c09", label:"09 Atomic & Nuclear Phenomena",          total:25 },
+        { id:"cp_c10", label:"10 Mathematics",                         total:58 },
+        { id:"cp_c11", label:"11 Research Design & Execution",         total:40 },
+        { id:"cp_c12", label:"12 Data & Statistical Reasoning",        total:27 },
+      ]},
+    ]
+  },
+  {
+    id:"bb", label:"B/B — Biological & Biochemical", color:"#4ecb71",
+    desc:"v22 · 24 sub-decks · Biology · Biochemistry",
+    groups:[
+      { label:"A) Biology", items:[
+        { id:"bb_a01", label:"01 The Cell",                    total:127 },
+        { id:"bb_a02", label:"02 Reproduction",                total:125 },
+        { id:"bb_a03", label:"03 Embryogenesis & Development", total:82  },
+        { id:"bb_a04", label:"04 The Nervous System",          total:100 },
+        { id:"bb_a05", label:"05 The Endocrine System",        total:123 },
+        { id:"bb_a06", label:"06 The Respiratory System",      total:86  },
+        { id:"bb_a07", label:"07 The Cardiovascular System",   total:99  },
+        { id:"bb_a08", label:"08 The Immune System",           total:99  },
+        { id:"bb_a09", label:"09 The Digestive System",        total:81  },
+        { id:"bb_a10", label:"10 Homeostasis",                 total:78  },
+        { id:"bb_a11", label:"11 Musculoskeletal System",      total:95  },
+        { id:"bb_a12", label:"12 Genetics & Evolution",        total:85  },
+      ]},
+      { label:"B) Biochemistry", items:[
+        { id:"bb_b01", label:"01 Amino Acids, Peptides & Proteins",      total:70 },
+        { id:"bb_b02", label:"02 Enzymes",                               total:60 },
+        { id:"bb_b03", label:"03 Nonenzymatic Protein Function",         total:61 },
+        { id:"bb_b04", label:"04 Carbohydrate Structure & Function",     total:51 },
+        { id:"bb_b05", label:"05 Lipid Structure & Function",            total:34 },
+        { id:"bb_b06", label:"06 DNA & Biotechnology",                   total:80 },
+        { id:"bb_b07", label:"07 RNA & the Genetic Code",                total:80 },
+        { id:"bb_b08", label:"08 Biological Membranes",                  total:27 },
+        { id:"bb_b09", label:"09 Carbohydrate Metabolism I",             total:67 },
+        { id:"bb_b10", label:"10 Carbohydrate Metabolism II",            total:51 },
+        { id:"bb_b11", label:"11 Lipid & Amino Acid Metabolism",         total:44 },
+        { id:"bb_b12", label:"12 Bioenergetics & Regulation",            total:31 },
+      ]},
+    ]
+  },
+  {
+    id:"ps", label:"P/S — Psychology & Sociology", color:"#a64dff",
+    desc:"v23 · Mr. Pankow · Psych/Soc foundations for the MCAT",
+    groups:[
+      { label:"Section 6 — Sensing & Responding to the Environment", items:[
+        { id:"ps_6a", label:"6A Sensing the Environment",              total:254 },
+        { id:"ps_6b", label:"6B Making Sense of the Environment",      total:381 },
+        { id:"ps_6c", label:"6C Responding to the World",              total:145 },
+      ]},
+      { label:"Section 7 — Individual & Social Behavior", items:[
+        { id:"ps_7a", label:"7A Individual Influences on Behavior",    total:617 },
+        { id:"ps_7b", label:"7B Social Processes",                     total:43  },
+        { id:"ps_7c", label:"7C Attitude & Behavior Change",           total:111 },
+      ]},
+      { label:"Section 8 — Social Interactions", items:[
+        { id:"ps_8ab", label:"8A/8B Combined",                         total:162 },
+        { id:"ps_8c",  label:"8C Social Interactions, Behavior & Biological Explanations", total:120 },
+      ]},
+      { label:"Section 9 — Society & Culture", items:[
+        { id:"ps_9a", label:"9A Social Structures",                    total:73  },
+        { id:"ps_9b", label:"9B Demographics & Culture",               total:98  },
+        { id:"ps_9c", label:"9C Statistics, Study Types & Social Inequality", total:241 },
+      ]},
+    ]
+  },
+  {
+    id:"aamc", label:"AAMC FL Error Cards", color:"#ff8c42",
+    desc:"v24 · Cards pulled from official AAMC full-length errors",
+    groups:[
+      { label:null, items:[
+        { id:"aamc_cp", label:"C/P Errors",          total:52 },
+        { id:"aamc_bb", label:"B/B Errors",          total:29 },
+        { id:"aamc_ps", label:"P/S Errors",          total:39 },
+        { id:"aamc_rw", label:"Random Weak Topics",  total:17 },
+      ]}
+    ]
+  },
+  {
+    id:"og", label:"OG Jack Sparrow Misc", color:"#8A8275",
+    desc:"v25 · \"I DIDN'T USE THESE\" — original deck, bonus reference only",
+    groups:[
+      { label:null, items:[
+        { id:"og_cp",   label:"C/P Miscellaneous", total:464 },
+        { id:"og_bb",   label:"B/B Miscellaneous", total:436 },
+        { id:"og_aamc", label:"AAMC (spoilers)",   total:359 },
+      ]}
+    ]
+  },
+];
+const CH_TOTAL = CH_SECTIONS.reduce((s,sec) =>
+  s + sec.groups.reduce((gs,g) => gs + g.items.reduce((is,it) => is + it.total, 0), 0), 0); // 6992
+
 const MARATHON_DATE = "2027-01-18";
 const SUMMER_START = "2026-05-18";
 const SUMMER_END = "2026-08-02";
@@ -2353,6 +2550,7 @@ let currentTab = "today";
 let currentViewDate = null;
 let currentWeekIdx = null;
 let currentEditDate = null; // date string when the override editor is open, null when closed
+let ankiSubTab = "main"; // "main" | "captain"
 
 // ============================================================
 // SCHEDULE OVERRIDES
@@ -3489,8 +3687,108 @@ function renderWeek() {
   }
 }
 
+// ============================================================
+// CAPTAIN HOOK DECK helpers
+// ============================================================
+function getCHDone(id) { return parseInt(localStorage.getItem("ch2026_done_" + id) || "0") || 0; }
+function setCHDone(id, val) { localStorage.setItem("ch2026_done_" + id, Math.max(0, parseInt(val)||0)); }
+function isCHSecOpen(secId) { return localStorage.getItem("ch2026_open_" + secId) === "1"; }
+function toggleCHSec(secId) { localStorage.setItem("ch2026_open_" + secId, isCHSecOpen(secId) ? "0" : "1"); }
+
+function chSectionTotals(sec) {
+  let total = 0, done = 0;
+  sec.groups.forEach(g => g.items.forEach(it => { total += it.total; done += getCHDone(it.id); }));
+  return { total, done };
+}
+
+function renderAnkiCH() {
+  const grandDone  = CH_SECTIONS.reduce((s,sec) => s + chSectionTotals(sec).done,  0);
+  const grandPct   = CH_TOTAL ? Math.round(grandDone / CH_TOTAL * 100) : 0;
+
+  const sectionsHtml = CH_SECTIONS.map(sec => {
+    const { total: secTotal, done: secDone } = chSectionTotals(sec);
+    const secPct  = secTotal ? Math.min(100, Math.round(secDone / secTotal * 100)) : 0;
+    const isOpen  = isCHSecOpen(sec.id);
+
+    const groupsHtml = sec.groups.map((g, gi) => {
+      const groupLabel = g.label
+        ? `<div class="ch-group-label"${gi===0?' style="border-top:none;margin-top:4px;padding-top:0;"':''}>${g.label}</div>`
+        : "";
+      const rowsHtml = g.items.map(item => {
+        const done = getCHDone(item.id);
+        const pct  = item.total ? Math.min(100, Math.round(done / item.total * 100)) : 0;
+        return `<div class="ch-row">
+          <div class="ch-row-name">${item.label}</div>
+          <div class="ch-row-bar-wrap"><div class="ch-row-bar" style="width:${pct}%;background:${sec.color};"></div></div>
+          <input type="number" min="0" max="${item.total}" class="ch-row-input" data-ch-id="${item.id}" data-ch-sec="${sec.id}" value="${done||""}" placeholder="0">
+          <div class="ch-row-total">/ ${item.total}</div>
+        </div>`;
+      }).join("");
+      return groupLabel + rowsHtml;
+    }).join("");
+
+    return `<div class="ch-section${isOpen?" ch-open":""}" id="ch-sec-${sec.id}">
+      <div class="ch-section-hd" data-ch-toggle="${sec.id}">
+        <div class="ch-section-dot" style="background:${sec.color};"></div>
+        <div class="ch-section-title">${sec.label}</div>
+        <div class="ch-section-meta">${secDone} / ${secTotal} · ${secPct}%</div>
+        <div class="ch-section-bar-wrap"><div class="ch-section-bar" style="width:${secPct}%;background:${sec.color};"></div></div>
+        <div class="ch-section-chevron">›</div>
+      </div>
+      <div class="ch-section-body">
+        <div class="hint" style="margin-bottom:10px;font-size:12px;">${sec.desc}</div>
+        ${groupsHtml}
+      </div>
+    </div>`;
+  }).join("");
+
+  content.innerHTML = `
+    <div class="anki-subtabs">
+      <button class="anki-subtab-btn" data-anki-subtab="main">My Decks</button>
+      <button class="anki-subtab-btn active" data-anki-subtab="captain">⚓ Captain Hook</button>
+    </div>
+    <div class="panel">
+      <h2>⚓ Captain Hook Deck</h2>
+      <div class="hint" style="margin-bottom:12px;">Bonus reference deck — <strong>not counted in your daily quotas</strong>. Track how many cards you've covered in each sub-deck.</div>
+      <div class="ch-grand-bar-wrap"><div class="ch-grand-bar" style="width:${grandPct}%;"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:18px;">
+        <span>${grandDone.toLocaleString()} cards studied</span>
+        <span>${CH_TOTAL.toLocaleString()} total · ${grandPct}% complete</span>
+      </div>
+      <div class="hint" style="font-size:11.5px;margin-bottom:14px;">Tap a section to expand. Enter how many cards you've done in each sub-deck — progress saves automatically.</div>
+      ${sectionsHtml}
+    </div>
+  `;
+
+  // Sub-tab switch
+  for (const btn of content.querySelectorAll("[data-anki-subtab]")) {
+    btn.addEventListener("click", () => { ankiSubTab = btn.dataset.ankiSubtab; renderAnki(); });
+  }
+
+  // Section expand/collapse
+  for (const hd of content.querySelectorAll("[data-ch-toggle]")) {
+    hd.addEventListener("click", e => {
+      if (e.target.tagName === "INPUT") return;
+      toggleCHSec(hd.dataset.chToggle);
+      renderAnkiCH();
+    });
+  }
+
+  // Input changes — save + re-render (open state preserved via localStorage)
+  for (const inp of content.querySelectorAll("[data-ch-id]")) {
+    inp.addEventListener("change", () => {
+      const val = Math.max(0, Math.min(parseInt(inp.value)||0, parseInt(inp.max)||9999));
+      inp.value = val || "";
+      setCHDone(inp.dataset.chId, val);
+      renderAnkiCH();
+    });
+  }
+}
+
 // ----- ANKI -----
 function renderAnki() {
+  if (ankiSubTab === "captain") { renderAnkiCH(); return; }
+
   const today = todayISO();
   let viewDate = currentViewDate || today;
   if (viewDate < SUMMER_START) viewDate = SUMMER_START;
@@ -3541,6 +3839,10 @@ function renderAnki() {
   }).join("");
 
   content.innerHTML = `
+    <div class="anki-subtabs">
+      <button class="anki-subtab-btn active" data-anki-subtab="main">My Decks</button>
+      <button class="anki-subtab-btn" data-anki-subtab="captain">⚓ Captain Hook</button>
+    </div>
     <div class="panel">
       <h2>Anki — Overall Status</h2>
       <div class="dash-grid">
@@ -3613,6 +3915,11 @@ function renderAnki() {
   document.getElementById("anki-date").onchange = e => { currentViewDate = e.target.value; renderAnki(); };
 
   wireUpAnkiCheckin(viewDate, renderAnki);
+
+  // Sub-tab switch
+  for (const btn of content.querySelectorAll("[data-anki-subtab]")) {
+    btn.addEventListener("click", () => { ankiSubTab = btn.dataset.ankiSubtab; renderAnki(); });
+  }
 }
 
 // ----- RUNNING -----
