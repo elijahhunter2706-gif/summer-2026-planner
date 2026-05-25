@@ -1,4 +1,4 @@
-const CACHE = 'summer2026-v12';
+const CACHE = 'summer2026-v13';
 const PRECACHE = [
   './summer_2026_portal.html',
   './manifest.json',

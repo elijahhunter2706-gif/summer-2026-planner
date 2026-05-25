@@ -1649,6 +1649,226 @@ textarea.notes {
   .deck:hover { transform: none; }
   .bubble:hover { transform: none; }
 }
+
+/* ============================================================
+   CELEBRATION + SWIPE PROGRESS ANIMATIONS
+   ============================================================ */
+
+/* ---- Live swipe progress ---- */
+.task-swipe-bg {
+  background: linear-gradient(90deg, var(--success) 0%, color-mix(in srgb, var(--success) 80%, white 20%) 100%);
+  --bg-pct: calc(var(--swipe-pct, 0.55) * 100%);
+  clip-path: inset(0 calc(100% - var(--bg-pct)) 0 0);
+  transition: clip-path 0.18s cubic-bezier(0.16,1,0.3,1), background 0.22s ease;
+}
+.task-row.swipe-enabled:not(.swiping):not(.swipe-complete) .task-swipe-bg {
+  --bg-pct: 56px;
+  clip-path: inset(0 calc(100% - 56px) 0 0);
+  opacity: 1;
+}
+.task-row.swiping .task-swipe-bg,
+.task-row.swipe-complete .task-swipe-bg { transition: clip-path 0.08s linear, background 0.18s ease; }
+.task-row.swipe-complete .task-swipe-bg { clip-path: inset(0 0 0 0); }
+.task-swipe-icon {
+  transform: scale(calc(0.78 + var(--swipe-pct, 0) * 0.5));
+  transition: background 0.22s ease, color 0.22s ease, transform 0.14s ease-out, box-shadow 0.22s ease;
+  position: relative; z-index: 1;
+}
+.task-row.swipe-ready .task-swipe-icon {
+  background: #FFFCF3; color: var(--success); transform: scale(1.22);
+  box-shadow: 0 0 0 6px rgba(255,255,255,0.18), 0 6px 18px rgba(42,38,29,0.22);
+  animation: swipeIconPop 0.42s cubic-bezier(0.34, 1.7, 0.64, 1);
+}
+@keyframes swipeIconPop {
+  0%   { transform: scale(0.95); }
+  55%  { transform: scale(1.42) rotate(-8deg); }
+  100% { transform: scale(1.22) rotate(0); }
+}
+.task-row.swipe-ready .task-swipe-bg {
+  background-size: 200% 100%;
+  background-image: linear-gradient(90deg, var(--success) 0%, #7BC476 35%, #FFFCF3 50%, #7BC476 65%, var(--success) 100%);
+  animation: swipeReadyShimmer 1.4s linear infinite;
+}
+@keyframes swipeReadyShimmer { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+.task-swipe-sparkle {
+  position: absolute; width: 7px; height: 7px; border-radius: 50%;
+  background: rgba(255,252,243,0.95); pointer-events: none; z-index: 2;
+  top: 50%; left: 0;
+  animation: sparkleFly 0.7s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+@keyframes sparkleFly {
+  0%   { opacity: 0; transform: translate(-50%,-50%) scale(0.4); }
+  20%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx,40px)), calc(-50% + var(--dy,-28px))) scale(0.2); }
+}
+.task-swipe-label {
+  opacity: calc(0.4 + var(--swipe-pct, 0) * 0.8);
+  transform: translateX(calc((1 - var(--swipe-pct, 0)) * -8px));
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+/* ---- Day-complete celebration ---- */
+.celebration-overlay {
+  position: fixed; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 18px;
+  z-index: 4000; pointer-events: none; overflow: hidden;
+}
+.celebration-overlay.active { pointer-events: auto; }
+.celebration-overlay .celeb-veil {
+  position: absolute; inset: 0;
+  background: radial-gradient(120% 80% at 50% 40%, color-mix(in srgb, var(--paper-3) 92%, transparent) 0%, color-mix(in srgb, var(--paper) 86%, transparent) 55%, color-mix(in srgb, var(--paper) 0%, transparent) 100%);
+  backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+  opacity: 0; animation: celebVeilIn 0.45s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+.celebration-overlay.dismissing .celeb-veil { animation: celebVeilOut 0.45s cubic-bezier(0.65,0,0.35,1) forwards; }
+@keyframes celebVeilIn  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes celebVeilOut { from { opacity: 1; } to { opacity: 0; } }
+.celebration-overlay .celeb-stack {
+  position: relative; z-index: 2; display: flex; flex-direction: column;
+  align-items: center; gap: 14px; text-align: center; padding: 0 24px;
+}
+.celebration-overlay .celeb-eyebrow {
+  font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700;
+  letter-spacing: 4px; text-transform: uppercase; font-size: 12px;
+  color: var(--ink-2); opacity: 0;
+  animation: celebRise 0.7s cubic-bezier(0.16,1,0.3,1) 0.25s forwards;
+}
+.celebration-overlay .celeb-title {
+  font-family: 'Instrument Serif', serif; font-style: italic;
+  font-size: clamp(54px,12vw,132px); line-height: 0.95; color: var(--ink);
+  opacity: 0; position: relative;
+  animation: celebRise 0.8s cubic-bezier(0.16,1,0.3,1) 0.35s forwards;
+}
+.celebration-overlay .celeb-title .celeb-accent { color: var(--indigo); display: inline-block; }
+.celebration-overlay .celeb-scribble {
+  display: block; margin: -6px auto 0; opacity: 0;
+  animation: celebRise 0.5s cubic-bezier(0.16,1,0.3,1) 0.7s forwards;
+}
+.celebration-overlay .celeb-scribble path {
+  stroke: var(--coral); stroke-width: 4; fill: none; stroke-linecap: round;
+  stroke-dasharray: 280; stroke-dashoffset: 280;
+  animation: celebScribble 0.9s cubic-bezier(0.65,0,0.35,1) 0.85s forwards;
+}
+@keyframes celebScribble { to { stroke-dashoffset: 0; } }
+.celebration-overlay .celeb-sub {
+  font-family: 'Plus Jakarta Sans', sans-serif; font-size: 17px; color: var(--ink-2);
+  opacity: 0; max-width: 360px;
+  animation: celebRise 0.7s cubic-bezier(0.16,1,0.3,1) 0.95s forwards;
+}
+.celebration-overlay .celeb-tag {
+  display: inline-flex; align-items: center; gap: 10px; padding: 10px 18px;
+  border-radius: 999px; background: var(--paper-3); border: 1px solid var(--border-2);
+  font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 13px;
+  color: var(--ink); letter-spacing: 0.3px; box-shadow: var(--shadow-sm);
+  opacity: 0; animation: celebRise 0.7s cubic-bezier(0.16,1,0.3,1) 1.1s forwards;
+}
+.celebration-overlay .celeb-tag .celeb-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--success);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--success) 30%, transparent);
+}
+.celebration-overlay .celeb-dismiss {
+  font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12px; color: var(--muted);
+  letter-spacing: 0.5px; opacity: 0; animation: celebRise 0.5s ease 1.5s forwards;
+}
+.celebration-overlay.dismissing .celeb-stack { animation: celebStackOut 0.45s cubic-bezier(0.65,0,0.35,1) forwards; }
+@keyframes celebStackOut { to { opacity: 0; transform: translateY(-12px) scale(0.98); } }
+@keyframes celebRise {
+  from { opacity: 0; transform: translateY(18px); filter: blur(4px); }
+  to   { opacity: 1; transform: translateY(0);    filter: blur(0);   }
+}
+.celeb-confetti { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
+.celeb-piece {
+  position: absolute; top: -8%; width: var(--w,12px); height: var(--h,16px);
+  background: var(--c,var(--butter)); border-radius: var(--r-piece,3px);
+  transform-origin: center; opacity: 0; will-change: transform;
+  animation: celebFall var(--dur,2.8s) cubic-bezier(0.32,0.04,0.68,0.99) var(--delay,0s) forwards,
+             celebSpin var(--spin,1.8s) linear var(--delay,0s) infinite;
+}
+.celeb-piece.shape-circle  { border-radius: 50%; }
+.celeb-piece.shape-strip   { width: 4px; height: 22px; border-radius: 4px; }
+.celeb-piece.shape-diamond { border-radius: 2px; transform: rotate(45deg); }
+.celeb-piece.shape-star {
+  background: none; width: 18px; height: 18px;
+  clip-path: polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
+  background-color: var(--c,var(--butter));
+}
+@keyframes celebFall {
+  0%   { opacity: 0;    transform: translate3d(var(--x,0),-10%,0) rotate(var(--rot,0deg)); }
+  10%  { opacity: 1; }
+  100% { opacity: 0.95; transform: translate3d(calc(var(--x,0) + var(--drift,40px)),115vh,0) rotate(calc(var(--rot,0deg) + var(--end-rot,720deg))); }
+}
+@keyframes celebSpin { to { transform: translate3d(var(--x,0),0,0) rotate(720deg); } }
+.celeb-rings { position: absolute; left: 50%; top: 46%; transform: translate(-50%,-50%); z-index: 1; pointer-events: none; }
+.celeb-ring {
+  position: absolute; left: 50%; top: 50%; width: 80px; height: 80px; border-radius: 50%;
+  border: 2px solid var(--c,var(--lavender)); transform: translate(-50%,-50%) scale(0);
+  opacity: 0.55; animation: celebRing 1.6s cubic-bezier(0.16,1,0.3,1) var(--ring-delay,0s) forwards;
+}
+@keyframes celebRing {
+  0%   { transform: translate(-50%,-50%) scale(0); opacity: 0.55; }
+  100% { transform: translate(-50%,-50%) scale(9); opacity: 0; }
+}
+.celeb-sticker {
+  position: absolute; width: 56px; height: 56px; border-radius: 50%;
+  background: var(--c,var(--butter)); display: flex; align-items: center; justify-content: center;
+  font-size: 26px; font-weight: 800; color: var(--ink);
+  box-shadow: 0 8px 22px -6px rgba(42,38,29,0.22), inset 0 -3px 0 rgba(42,38,29,0.10);
+  opacity: 0; transform: translate(-50%,-50%) scale(0) rotate(var(--rot,-10deg)); z-index: 2;
+  animation: stickerPop 0.7s cubic-bezier(0.34,1.7,0.64,1) var(--delay,0s) forwards,
+             stickerWobble 3.2s ease-in-out var(--delay,0s) infinite;
+}
+@keyframes stickerPop {
+  0%   { opacity: 0; transform: translate(-50%,-50%) scale(0) rotate(var(--rot,-10deg)); }
+  60%  { opacity: 1; transform: translate(-50%,-50%) scale(1.18) rotate(calc(var(--rot,-10deg) - 4deg)); }
+  100% { opacity: 1; transform: translate(-50%,-50%) scale(1) rotate(var(--rot,-10deg)); }
+}
+@keyframes stickerWobble {
+  0%,100% { transform: translate(-50%,-50%) scale(1)    rotate(var(--rot,-10deg)); }
+  50%     { transform: translate(-50%,-50%) scale(1.04) rotate(calc(var(--rot,-10deg) + 6deg)); }
+}
+
+/* Anki card-fly celebration */
+.anki-celebrate-flash { position: absolute; inset: 0; pointer-events: none; border-radius: var(--r); overflow: hidden; z-index: 3; }
+.anki-celebrate-flash .anki-card-fly {
+  position: absolute; width: 56px; height: 78px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--c,var(--lavender)) 0%, color-mix(in srgb, var(--c,var(--lavender)) 70%, white 30%) 100%);
+  border: 1.5px solid rgba(42,38,29,0.18);
+  box-shadow: 0 14px 28px -10px rgba(42,38,29,0.32), inset 0 -3px 0 rgba(42,38,29,0.08);
+  top: 50%; left: 50%; transform: translate(-50%,-50%) scale(0.4) rotate(var(--rot-start,-8deg));
+  opacity: 0; animation: ankiCardFly 1.4s cubic-bezier(0.16,1,0.3,1) var(--delay,0s) forwards;
+}
+.anki-celebrate-flash .anki-card-fly::after {
+  content: "✓"; position: absolute; inset: 0; display: grid; place-items: center;
+  font-size: 30px; font-weight: 800; color: var(--ink); opacity: 0.75;
+}
+@keyframes ankiCardFly {
+  0%   { opacity: 0; transform: translate(-50%,-50%) scale(0.4) rotate(var(--rot-start,-8deg)); }
+  25%  { opacity: 1; transform: translate(calc(-50% + var(--mid-x,0px)),calc(-50% + var(--mid-y,-40px))) scale(1.1) rotate(calc(var(--rot-start,-8deg) + 6deg)); }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--end-x,220px)),calc(-50% + var(--end-y,-260px))) scale(0.6) rotate(calc(var(--rot-start,-8deg) + 30deg)); }
+}
+.anki-celebrate-flash .anki-streak-badge {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%) scale(0);
+  background: var(--paper-3); border: 1.5px solid var(--gold); color: var(--ink);
+  padding: 10px 18px; border-radius: 999px;
+  font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 13px;
+  letter-spacing: 0.4px; box-shadow: var(--shadow); opacity: 0; white-space: nowrap;
+  animation: ankiBadge 1.8s cubic-bezier(0.34,1.6,0.64,1) 0.45s forwards;
+}
+.anki-celebrate-flash .anki-streak-badge .star { color: var(--gold); margin-right: 6px; }
+@keyframes ankiBadge {
+  0%   { opacity: 0; transform: translate(-50%,-50%) scale(0)    rotate(-6deg); }
+  20%  { opacity: 1; transform: translate(-50%,-50%) scale(1.12) rotate(2deg);  }
+  70%  { opacity: 1; transform: translate(-50%,-50%) scale(1)    rotate(0);     }
+  100% { opacity: 0; transform: translate(-50%,-50%) scale(1)    rotate(0);     }
+}
+@media (prefers-reduced-motion: reduce) {
+  .celeb-piece, .celeb-ring, .celeb-sticker,
+  .anki-card-fly { animation-duration: 1ms !important; opacity: 0 !important; }
+  .celebration-overlay .celeb-veil { animation: none; opacity: 1; }
+  .celebration-overlay .celeb-title, .celebration-overlay .celeb-eyebrow,
+  .celebration-overlay .celeb-sub,  .celebration-overlay .celeb-tag,
+  .celebration-overlay .celeb-dismiss { animation: none; opacity: 1; }
+}
 </style>
 </head>
 <body class="launching">
@@ -2568,6 +2788,7 @@ function wireUpAnkiCheckin(viewDate, rerender) {
       const date = inp.dataset.checkinDate;
       setAnkiDaily(date, deckId, parseInt(inp.value) || 0);
       withFocusPreserved(rerender);
+      afterAnkiUpdate(date);
     });
   }
   for (const btn of content.querySelectorAll("button[data-anki-action]")) {
@@ -2918,16 +3139,26 @@ function attachSwipeToComplete(row, onComplete) {
   const task = row.querySelector(".task");
   if (!task) return;
   let startX = 0, currentX = 0, active = false, rowWidth = 0;
-  let startY = 0, gestureLocked = null; // null | "x" | "y"
+  let startY = 0, gestureLocked = null;
   let startedAt = 0;
   const THRESHOLD_FRAC = 0.55;
   const QUICK_FLICK_MS = 280;
   const QUICK_FLICK_PX = 90;
 
+  const swipeBg = row.querySelector(".task-swipe-bg");
+  let wasReady = false;
+
   const setX = (px) => {
     task.style.setProperty("--swipe-x", px + "px");
     const pct = Math.max(0, Math.min(1, px / rowWidth));
-    row.classList.toggle("swipe-ready", pct >= THRESHOLD_FRAC);
+    row.style.setProperty("--swipe-pct", pct.toFixed(3));
+    const nowReady = pct >= THRESHOLD_FRAC;
+    row.classList.toggle("swipe-ready", nowReady);
+    if (nowReady && !wasReady) {
+      emitSwipeSparkles(swipeBg, 6);
+      triggerHaptic('light');
+    }
+    wasReady = nowReady;
   };
 
   // Move/up listeners live on document while a gesture is active so iOS can't
@@ -2937,17 +3168,13 @@ function attachSwipeToComplete(row, onComplete) {
     if (!active) return;
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
-
     if (gestureLocked === null) {
       if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
       gestureLocked = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
       if (gestureLocked === "x") row.classList.add("swiping");
     }
     if (gestureLocked !== "x") return;
-
-    // Once locked horizontal, prevent the page from scrolling
     try { e.preventDefault(); } catch (_) {}
-
     currentX = Math.max(0, Math.min(dx, rowWidth + 40));
     if (currentX > rowWidth) currentX = rowWidth + (currentX - rowWidth) * 0.35;
     setX(currentX);
@@ -2963,21 +3190,28 @@ function attachSwipeToComplete(row, onComplete) {
     if (!active) return;
     active = false;
     cleanup();
-
-    if (gestureLocked !== "x") { row.classList.remove("swiping"); return; }
-
+    if (gestureLocked !== "x") {
+      row.classList.remove("swiping");
+      row.style.setProperty("--swipe-pct", "0");
+      wasReady = false;
+      return;
+    }
     const pct = currentX / rowWidth;
     const elapsed = performance.now() - startedAt;
     const isFlick = elapsed < QUICK_FLICK_MS && currentX > QUICK_FLICK_PX;
     row.classList.remove("swiping");
-
     if (pct >= THRESHOLD_FRAC || isFlick) {
       row.classList.add("swipe-complete");
       row._swipedJustNow = true;
+      row.style.setProperty("--swipe-pct", "1");
+      emitSwipeSparkles(swipeBg, 10);
       task.style.setProperty("--swipe-x", (rowWidth + 80) + "px");
-      triggerHaptic('heavy'); // swipe-complete = strong confirmation
+      triggerHaptic('heavy');
       setTimeout(() => { try { onComplete(); } catch (_) {} }, 240);
     } else {
+      row.classList.remove("swipe-ready");
+      row.style.setProperty("--swipe-pct", "0");
+      wasReady = false;
       setX(0);
     }
   };
@@ -2991,8 +3225,7 @@ function attachSwipeToComplete(row, onComplete) {
     currentX = 0;
     startedAt = performance.now();
     rowWidth = row.getBoundingClientRect().width;
-    // Attach move/up to document so iOS keeps delivering events even if the
-    // pointer drifts off the element.
+    wasReady = false;
     document.addEventListener("pointermove", onMove, { passive: false });
     document.addEventListener("pointerup",   onUp);
     document.addEventListener("pointercancel", onUp);
@@ -3138,7 +3371,7 @@ function renderToday() {
     if (getCompletionMode() === "swipe" && !t.classList.contains("done") && !e.target.closest(".checkbox")) return;
     const id = t.dataset.task;
     const newVal = !isChecked(viewDate, id);
-    triggerHaptic(newVal ? 'medium' : 'light'); // complete = medium, uncheck = light
+    triggerHaptic(newVal ? 'medium' : 'light');
     setCheck(viewDate, id, newVal);
     if (id === "run" && newVal) {
       const task = info.tasks.find(x => x.id === "run");
@@ -3148,6 +3381,7 @@ function renderToday() {
       }
     }
     renderToday();
+    if (newVal) afterTaskToggle(viewDate);
   });
 
   // Wire swipe-to-complete on each row (if swipe mode is on)
@@ -3164,6 +3398,7 @@ function renderToday() {
           }
         }
         renderToday();
+        afterTaskToggle(viewDate);
       });
     }
   }
@@ -4073,6 +4308,228 @@ function renderSettings() {
     }
   }
 }
+
+// ============================================================
+// SWIPE SPARKLES + CELEBRATION ANIMATIONS
+// ============================================================
+
+function emitSwipeSparkles(bg, count) {
+  if (!bg) return;
+  const reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduced) return;
+  const rect = bg.getBoundingClientRect();
+  const pct = parseFloat(getComputedStyle(bg.parentElement).getPropertyValue("--swipe-pct") || "0.55");
+  const edgeX = Math.max(40, pct * rect.width - 6);
+  for (let i = 0; i < count; i++) {
+    const s = document.createElement("span");
+    s.className = "task-swipe-sparkle";
+    s.style.left = edgeX + "px";
+    const dx = (Math.random() * 70 + 10) * (Math.random() < 0.5 ? -1 : 1);
+    const dy = -(Math.random() * 50 + 16);
+    s.style.setProperty("--dx", dx + "px");
+    s.style.setProperty("--dy", dy + "px");
+    s.style.animationDelay = (Math.random() * 80) + "ms";
+    const hue = ["#FFFCF3", "#FFEBA6", "#CFEAD2", "#FFD7BB"][Math.floor(Math.random() * 4)];
+    s.style.background = hue;
+    s.style.width = s.style.height = (4 + Math.random() * 6) + "px";
+    bg.appendChild(s);
+    setTimeout(() => s.remove(), 900);
+  }
+}
+
+const CELEB_KEY = "summer2026_celebrated_day";
+function shouldFireDayCelebration(date) {
+  try { return localStorage.getItem(CELEB_KEY) !== date; } catch (_) { return true; }
+}
+function markDayCelebrated(date) {
+  try { localStorage.setItem(CELEB_KEY, date); } catch (_) {}
+}
+function clearDayCelebrated(date) {
+  try { if (localStorage.getItem(CELEB_KEY) === date) localStorage.removeItem(CELEB_KEY); } catch (_) {}
+}
+
+function maybeCelebrateDay(date) {
+  const info = getDayInfo(date);
+  if (!info || !info.week) return;
+  const real = info.tasks.filter(t => t.id !== "rest");
+  if (real.length === 0) return;
+  const allDone = real.every(t => isChecked(date, t.id));
+  if (!allDone) { clearDayCelebrated(date); return; }
+  if (!shouldFireDayCelebration(date)) return;
+  markDayCelebrated(date);
+  setTimeout(() => fireDayCelebration(date, real.length), 320);
+}
+
+const CELEB_PALETTE = ["#FFD874","#FFB48A","#F4A7BE","#BBADE7","#92C4E6","#9BD3A3","#EE7E5F","#4A5BAE"];
+const CELEB_SHAPES  = ["","shape-circle","shape-strip","shape-diamond","shape-star"];
+
+function fireDayCelebration(date, taskCount) {
+  const stale = document.querySelector(".celebration-overlay");
+  if (stale) stale.remove();
+  const overlay = document.createElement("div");
+  overlay.className = "celebration-overlay active";
+  overlay.setAttribute("role", "dialog");
+  overlay.setAttribute("aria-label", "Day complete celebration");
+
+  const veil = document.createElement("div");
+  veil.className = "celeb-veil";
+  overlay.appendChild(veil);
+
+  const rings = document.createElement("div");
+  rings.className = "celeb-rings";
+  for (let i = 0; i < 3; i++) {
+    const r = document.createElement("div");
+    r.className = "celeb-ring";
+    r.style.setProperty("--c", CELEB_PALETTE[(i * 3) % CELEB_PALETTE.length]);
+    r.style.setProperty("--ring-delay", (0.35 + i * 0.18) + "s");
+    rings.appendChild(r);
+  }
+  overlay.appendChild(rings);
+
+  const confetti = document.createElement("div");
+  confetti.className = "celeb-confetti";
+  const reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const pieceCount = reduced ? 0 : 90;
+  for (let i = 0; i < pieceCount; i++) {
+    const p = document.createElement("div");
+    const shape = CELEB_SHAPES[Math.floor(Math.random() * CELEB_SHAPES.length)];
+    p.className = "celeb-piece" + (shape ? " " + shape : "");
+    const c = CELEB_PALETTE[Math.floor(Math.random() * CELEB_PALETTE.length)];
+    p.style.setProperty("--c", c);
+    p.style.setProperty("--x", (Math.random() * 100) + "vw");
+    p.style.setProperty("--drift", ((Math.random() - 0.5) * 220) + "px");
+    p.style.setProperty("--rot", (Math.random() * 360) + "deg");
+    p.style.setProperty("--end-rot", (480 + Math.random() * 720) + "deg");
+    p.style.setProperty("--dur", (2.6 + Math.random() * 2.4) + "s");
+    p.style.setProperty("--delay", (Math.random() * 0.6) + "s");
+    p.style.setProperty("--w", (8 + Math.random() * 10) + "px");
+    p.style.setProperty("--h", (10 + Math.random() * 12) + "px");
+    confetti.appendChild(p);
+  }
+  overlay.appendChild(confetti);
+
+  const stack = document.createElement("div");
+  stack.className = "celeb-stack";
+  stack.innerHTML = `
+    <div class="celeb-eyebrow">${formatDate(date).toUpperCase()}</div>
+    <div class="celeb-title">Day <span class="celeb-accent">done.</span>
+      <svg class="celeb-scribble" width="280" height="22" viewBox="0 0 280 22" fill="none" aria-hidden="true">
+        <path d="M6 14 C 50 4, 110 22, 160 10 S 250 4, 274 14" />
+      </svg>
+    </div>
+    <div class="celeb-sub">${taskCount} task${taskCount === 1 ? "" : "s"} checked off. Hydrate, stretch, breathe.</div>
+    <div class="celeb-tag"><span class="celeb-dot"></span>Streak +1</div>
+    <div class="celeb-dismiss">Tap anywhere to dismiss</div>
+  `;
+  overlay.appendChild(stack);
+
+  if (!reduced) {
+    const stickerSpots = [
+      { x: 18, y: 22, c: "var(--butter)",   rot: -14, delay: 0.55 },
+      { x: 82, y: 26, c: "var(--blush)",    rot:  12, delay: 0.7  },
+      { x: 14, y: 68, c: "var(--mint)",     rot:   8, delay: 0.85 },
+      { x: 86, y: 70, c: "var(--lavender)", rot: -10, delay: 1.0  },
+    ];
+    for (const sp of stickerSpots) {
+      const st = document.createElement("div");
+      st.className = "celeb-sticker";
+      st.style.left = sp.x + "%";
+      st.style.top  = sp.y + "%";
+      st.style.setProperty("--c", sp.c);
+      st.style.setProperty("--rot", sp.rot + "deg");
+      st.style.setProperty("--delay", sp.delay + "s");
+      st.textContent = "✓";
+      overlay.appendChild(st);
+    }
+  }
+
+  const dismiss = () => {
+    if (overlay.classList.contains("dismissing")) return;
+    overlay.classList.add("dismissing");
+    setTimeout(() => overlay.remove(), 450);
+  };
+  overlay.addEventListener("click", dismiss);
+  overlay.addEventListener("touchstart", dismiss, { passive: true });
+  setTimeout(dismiss, 4800);
+  const onKey = (e) => { if (e.key === "Escape") { dismiss(); window.removeEventListener("keydown", onKey); } };
+  window.addEventListener("keydown", onKey);
+  triggerHaptic('heavy');
+  document.body.appendChild(overlay);
+}
+
+const ANKI_CELEB_KEY = "summer2026_celebrated_anki";
+function shouldFireAnkiCelebration(date) {
+  try { return localStorage.getItem(ANKI_CELEB_KEY) !== date; } catch (_) { return true; }
+}
+function markAnkiCelebrated(date) {
+  try { localStorage.setItem(ANKI_CELEB_KEY, date); } catch (_) {}
+}
+function clearAnkiCelebrated(date) {
+  try { if (localStorage.getItem(ANKI_CELEB_KEY) === date) localStorage.removeItem(ANKI_CELEB_KEY); } catch (_) {}
+}
+
+function maybeCelebrateAnki(date) {
+  let anyTarget = false, allMet = true;
+  for (const d of ANKI_DECKS) {
+    const target = ankiAdjustedTarget(d.id, date);
+    if (target > 0) anyTarget = true;
+    const done = ankiDailyEntry(date, d.id);
+    if (target > 0 && done < target) allMet = false;
+  }
+  if (!anyTarget) return;
+  if (!allMet) { clearAnkiCelebrated(date); return; }
+  if (!shouldFireAnkiCelebration(date)) return;
+  markAnkiCelebrated(date);
+  setTimeout(() => fireAnkiCelebration(date), 60);
+}
+
+function fireAnkiCelebration(date) {
+  let panel =
+    document.querySelector(".anki-checkin") ||
+    document.querySelector("[data-anki-panel]") ||
+    (document.querySelector("input[data-checkin-deck]") || {}).closest?.(".panel");
+  let transientHost = null;
+  if (!panel) {
+    transientHost = document.createElement("div");
+    transientHost.style.cssText = "position:fixed;left:50%;top:50%;width:min(560px,90vw);height:320px;transform:translate(-50%,-50%);pointer-events:none;z-index:3500;";
+    document.body.appendChild(transientHost);
+    panel = transientHost;
+  }
+  panel.style.position = panel.style.position || "relative";
+  const reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const layer = document.createElement("div");
+  layer.className = "anki-celebrate-flash";
+  panel.appendChild(layer);
+  if (!reduced) {
+    const colors = ANKI_DECKS.map(d => d.color);
+    const count = 14;
+    for (let i = 0; i < count; i++) {
+      const card = document.createElement("div");
+      card.className = "anki-card-fly";
+      card.style.setProperty("--c", colors[i % colors.length]);
+      const angle = (-110 + (i / (count - 1)) * 140) * (Math.PI / 180);
+      const dist = 220 + Math.random() * 120;
+      const endX = Math.cos(angle) * dist;
+      const endY = Math.sin(angle) * dist;
+      card.style.setProperty("--end-x", endX.toFixed(0) + "px");
+      card.style.setProperty("--end-y", endY.toFixed(0) + "px");
+      card.style.setProperty("--mid-x", (endX * 0.45).toFixed(0) + "px");
+      card.style.setProperty("--mid-y", (endY * 0.45 - 30).toFixed(0) + "px");
+      card.style.setProperty("--rot-start", ((Math.random() - 0.5) * 30) + "deg");
+      card.style.setProperty("--delay", (i * 35) + "ms");
+      layer.appendChild(card);
+    }
+  }
+  const badge = document.createElement("div");
+  badge.className = "anki-streak-badge";
+  badge.innerHTML = `<span class="star">★</span> All decks: target hit`;
+  layer.appendChild(badge);
+  triggerHaptic('heavy');
+  setTimeout(() => { layer.remove(); if (transientHost) transientHost.remove(); }, 2400);
+}
+
+function afterTaskToggle(date) { maybeCelebrateDay(date); }
+function afterAnkiUpdate(date) { maybeCelebrateAnki(date); }
 
 // Init — render from localStorage immediately, then pull latest from cloud
 updateHeroTitle(false);
